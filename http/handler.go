@@ -1,14 +1,12 @@
 package http
 
 import (
+	"encoding/json"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
 func (a *AppServer) registerUserHandler() httprouter.Handle {
-	type request struct{}
-	type response struct{}
-
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		// Do something with a.UserService
 	}
@@ -22,12 +20,27 @@ func (a *AppServer) getUserHandler() httprouter.Handle {
 
 func (a *AppServer) getAllCoursesHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		// Do something with a.CourseService
+		err, courses := a.CourseService.GetAllCourses()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if err = json.NewEncoder(w).Encode(courses); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	}
 }
 
-func (a *AppServer) getCoursesHandler() httprouter.Handle {
+func (a *AppServer) getCourseHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		// Do something with a.CourseService
+		id := p[0].Value
+		err, course := a.CourseService.GetCourse(id)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if err = json.NewEncoder(w).Encode(course); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 	}
 }

@@ -8,8 +8,8 @@ import (
 )
 
 type AppServer struct {
-	UserService   edubord.UserService
-	CourseService edubord.CourseService
+	UserService   eduboard.UserService
+	CourseService eduboard.CourseService
 	httpServer    *http.Server
 }
 

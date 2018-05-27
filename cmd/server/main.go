@@ -18,6 +18,6 @@ func main() {
 		CourseService: cS,
 	}
 
-	fmt.Println("listing now")
+	fmt.Println("listening now")
 	server.Run()
 }

@@ -15,11 +15,11 @@ func (a *AppServer) initializeRoutes(router *httprouter.Router) {
 	//	router.POST("/api/v1/logout")
 
 	// User
-	router.GET("/api/v1/userRepository/:id", a.getUserHandler())
+	router.GET("/api/v1/user/:id", a.getUserHandler())
 
 	// Courses
+	router.GET("/api/v1/courses/:id", a.getCourseHandler())
 	router.GET("/api/v1/courses/", a.getAllCoursesHandler())
-	router.GET("/api/v1/courses/:id", a.getCoursesHandler())
 }
 
 func (a *AppServer) serveFilesHandler() httprouter.Handle {

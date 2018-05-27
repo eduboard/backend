@@ -16,10 +16,10 @@ func newUserRepository(database *mgo.Database) *UserRepository {
 	}
 }
 
-func (u *UserRepository) Store(user *edubord.User) error {
+func (u *UserRepository) Store(user *eduboard.User) error {
 	return nil
 }
 
-func (u *UserRepository) Find(id edubord.UserId) (error, *edubord.User) {
-	return nil, &edubord.User{}
+func (u *UserRepository) Find(id string) (error, *eduboard.User) {
+	return nil, &eduboard.User{}
 }

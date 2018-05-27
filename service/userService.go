@@ -3,18 +3,18 @@ package service
 import "github.com/eduboard/backend"
 
 type UserService struct {
-	r edubord.UserRepository
+	r eduboard.UserRepository
 }
 
-func NewUserService(repository edubord.UserRepository) *UserService {
+func NewUserService(repository eduboard.UserRepository) *UserService {
 	return &UserService{
 		r: repository,
 	}
 }
 
-func (u *UserService) CreateUser(user *edubord.User) (error, *edubord.User) {
-	return nil, &edubord.User{}
+func (uS *UserService) CreateUser(user *eduboard.User) (error, *eduboard.User) {
+	return nil, &eduboard.User{}
 }
-func (u *UserService) Login(username string, password string) (error, *edubord.User) {
-	return nil, &edubord.User{}
+func (uS *UserService) Login(username string, password string) (error, *eduboard.User) {
+	return nil, &eduboard.User{}
 }

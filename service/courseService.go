@@ -5,19 +5,19 @@ import (
 )
 
 type CourseService struct {
-	r edubord.CourseRepository
+	r eduboard.CourseRepository
 }
 
-func NewCourseService(repository edubord.CourseRepository) *CourseService {
+func NewCourseService(repository eduboard.CourseRepository) *CourseService {
 	return &CourseService{
 		r: repository,
 	}
 }
 
-func (c *CourseService) GetAllCourses() (err error, courses []*edubord.Course) {
-	return nil, []*edubord.Course{}
+func (cS *CourseService) GetAllCourses() (err error, courses []*eduboard.Course) {
+	return cS.r.FindAll()
 }
 
-func (c *CourseService) GetCourse(id edubord.CourseId) (err error, course *edubord.Course) {
-	return nil, &edubord.Course{}
+func (cS *CourseService) GetCourse(id string) (err error, course *eduboard.Course) {
+	return cS.r.Find(id)
 }

@@ -1,21 +1,21 @@
-package edubord
+package eduboard
+
+import "gopkg.in/mgo.v2/bson"
 
 type Course struct {
-	Id          CourseId `json:"id" bson:"_id"`
-	Name        string   `json:"name" bson:"name"`
-	Description string   `json:"description" bson:"description"`
-	Members     []UserId `json:"members" bson:"members"`
+	Id          bson.ObjectId `json:"id,omitempty" bson:"_id,omitempty"`
+	Name        string        `json:"name,omitempty" bson:"name,omitempty"`
+	Description string        `json:"description,omitempty" bson:"description,omitempty"`
+	Members     []string      `json:"members,omitempty" bson:"members,omitempty"`
 }
-
-type CourseId string
 
 type CourseRepository interface {
 	Store(course *Course) error
-	Find(id CourseId) (error, *Course)
+	Find(id string) (error, *Course)
 	FindAll() (error, []*Course)
 }
 
 type CourseService interface {
 	GetAllCourses() (err error, courses []*Course)
-	GetCourse(id CourseId) (err error, course *Course)
+	GetCourse(id string) (err error, course *Course)
 }
