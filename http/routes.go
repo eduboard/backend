@@ -11,8 +11,8 @@ func (a *AppServer) initializeRoutes(router *httprouter.Router) {
 
 	// Registration
 	router.POST("/api/v1/register", a.registerUserHandler())
-	//	router.POST("/api/v1/login")
-	//	router.POST("/api/v1/logout")
+	router.POST("/api/v1/login", a.loginUserHandler())
+	router.POST("/api/v1/logout", a.logoutUserHandler())
 
 	// User
 	router.GET("/api/v1/user/:id", a.getUserHandler())
