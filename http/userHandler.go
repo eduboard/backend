@@ -2,13 +2,11 @@ package http
 
 import (
 	"encoding/json"
-	"github.com/julienschmidt/httprouter"
 	"github.com/eduboard/backend"
+	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"time"
 )
-
-// USER
 
 func (a *AppServer) registerUserHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -55,18 +53,18 @@ func (a *AppServer) logoutUserHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		accessToken, err := r.Cookie("accessToken")
 		if err != nil {
-			// "logout succeded" since we werent logged in in the first place
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 		err = a.UserService.Logout(accessToken.Value)
-		expire := time.Now().AddDate(0, 0, -1)
-		cookie := http.Cookie{Name: "accessToken", Value: accessToken.Value, Path: "/", Expires: expire, MaxAge: 86400}
-		http.SetCookie(w, &cookie)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
+		expire := time.Now().Add(24 * time.Hour)
+		cookie := http.Cookie{Name: "accessToken", Value: accessToken.Value, Path: "/", Expires: expire, MaxAge: 86400}
+		http.SetCookie(w, &cookie)
 		w.WriteHeader(http.StatusOK)
 	}
 }
@@ -80,35 +78,6 @@ func (a *AppServer) getUserHandler() httprouter.Handle {
 			return
 		}
 		if err = json.NewEncoder(w).Encode(user); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-	}
-}
-
-// Course
-
-func (a *AppServer) getAllCoursesHandler() httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		err, courses := a.CourseService.GetAllCourses()
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		if err = json.NewEncoder(w).Encode(courses); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-	}
-}
-
-func (a *AppServer) getCourseHandler() httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		id := p[0].Value
-		err, course := a.CourseService.GetCourse(id)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		if err = json.NewEncoder(w).Encode(course); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}

@@ -1,30 +1,27 @@
 package auth
 
-import (
-	"log"
-	"golang.org/x/crypto/bcrypt"
-)
+import "golang.org/x/crypto/bcrypt"
 
-func (a *UserAuthenticator)HashAndSalt(pwd string) (error string) {
-	bytePwd := []byte(pwd)
+type Authenticator struct{}
 
+func (a *Authenticator) Hash(password string) (string, error) {
+	bytePwd := []byte(password)
 	hash, err := bcrypt.GenerateFromPassword(bytePwd, bcrypt.DefaultCost)
 	if err != nil {
-		log.Println(err)
+		return "", err
 	}
 
-	return string(hash)
+	return string(hash), nil
 }
 
-func (a *UserAuthenticator)CompareWithHash(plainPwd string, hashedPwd string) (error bool) {
-	byteHash := []byte(hashedPwd)
-	bytePlain := []byte(plainPwd)
+func (a *Authenticator) CompareHash(hashedPassword string, plainPassword string) (bool, error) {
+	byteHash := []byte(hashedPassword)
+	bytePlain := []byte(plainPassword)
 
 	err := bcrypt.CompareHashAndPassword(byteHash, bytePlain)
 	if err != nil {
-		log.Println(err)
-		return false
+		return false, err
 	}
 
-	return true
+	return true, nil
 }

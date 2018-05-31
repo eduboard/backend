@@ -3,28 +3,39 @@ package service
 import (
 	"errors"
 	"github.com/eduboard/backend"
+	"github.com/eduboard/backend/auth"
 )
 
 type UserService struct {
 	r eduboard.UserRepository
-	a eduboard.UserAuthenticator
+	a auth.Authenticator
 }
 
-func NewUserService(repository eduboard.UserRepository, authenticator eduboard.UserAuthenticator) *UserService {
+type AuthenticationProvider interface {
+	Hash(password string) (string, error)
+	CompareHash(hashedPassword string, plainPassword string) (bool, error)
+	SessionId() string
+}
+
+func NewUserService(repository eduboard.UserRepository) *UserService {
 	return &UserService{
 		r: repository,
-		a: authenticator,
+		a: auth.Authenticator{},
 	}
 }
 
 func (uS *UserService) CreateUser(user *eduboard.User) (error, *eduboard.User) {
-	
-	hashedPassword := uS.a.HashAndSalt(user.PasswordHash)
+	hashedPassword, err := uS.a.Hash(user.PasswordHash)
+	if err != nil {
+		return err, &eduboard.User{}
+	}
 	user.PasswordHash = hashedPassword
 
-	err := uS.r.Store(user)
-	
-	return err, user
+	err = uS.r.Store(user)
+	if err != nil {
+		return err, &eduboard.User{}
+	}
+	return nil, user
 }
 
 func (uS *UserService) GetUser(id string) (err error, user *eduboard.User) {
@@ -34,14 +45,18 @@ func (uS *UserService) GetUser(id string) (err error, user *eduboard.User) {
 func (uS *UserService) Login(username string, password string) (error, *eduboard.User) {
 	err, user := uS.r.FindByUsername(username)
 	if err != nil {
-		return err, &eduboard.User{}	
+		return err, &eduboard.User{}
 	}
 
-	if !uS.a.CompareWithHash(password, user.PasswordHash) {
-		return errors.New("invalid password"), &eduboard.User{}	
+	ok, err := uS.a.CompareHash(password, user.PasswordHash)
+	if err != nil {
+		return err, &eduboard.User{}
+	}
+	if !ok {
+		return errors.New("invalid password"), &eduboard.User{}
 	}
 
-	user.AccessToken = uS.a.CreateAccessToken()
+	user.AccessToken = uS.a.SessionId()
 	err, user = uS.r.UpdateAccessToken(user)
 	if err != nil {
 		return err, &eduboard.User{}
@@ -50,8 +65,8 @@ func (uS *UserService) Login(username string, password string) (error, *eduboard
 	return nil, user
 }
 
-func (uS *UserService) Logout(accessToken string) (error) {
-	err, user := uS.r.FindByAccessToken(accessToken)
+func (uS *UserService) Logout(sessionId string) error {
+	err, user := uS.r.FindByAccessToken(sessionId)
 	if err != nil {
 		return err
 	}
@@ -60,4 +75,12 @@ func (uS *UserService) Logout(accessToken string) (error) {
 	uS.r.UpdateAccessToken(user)
 
 	return nil
+}
+
+func (uS *UserService) CheckAuthentication(sessionId string) (err error, ok bool) {
+	err, _ = uS.r.FindByAccessToken(sessionId)
+	if err != nil {
+		return err, false
+	}
+	return nil, true
 }

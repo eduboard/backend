@@ -19,7 +19,7 @@ func (a *AppServer) initializeRoutes(router *httprouter.Router) {
 
 	// Courses
 	router.GET("/api/v1/courses/:id", a.getCourseHandler())
-	router.GET("/api/v1/courses/", a.getAllCoursesHandler())
+	router.GET("/api/v1/courses/", NewAuthMiddleware(a.UserService, a.getAllCoursesHandler()))
 }
 
 func (a *AppServer) serveFilesHandler() httprouter.Handle {

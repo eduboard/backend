@@ -21,15 +21,14 @@ type UserRepository interface {
 	UpdateAccessToken(user *User) (error, *User)
 }
 
-type UserAuthenticator interface {
-	HashAndSalt(pwd string) string
-	CompareWithHash(plainPwd string, hashedPwd string) bool
-	CreateAccessToken() string
-}
-
 type UserService interface {
 	CreateUser(u *User) (error, *User)
 	GetUser(id string) (error, *User)
+	UserAuthenticationProvider
+}
+
+type UserAuthenticationProvider interface {
 	Login(username string, password string) (error, *User)
-	Logout(accessToken string) error
+	Logout(sessionId string) error
+	CheckAuthentication(sessionId string) (err error, ok bool)
 }

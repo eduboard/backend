@@ -26,8 +26,8 @@ type UserService struct {
 	CreateUserFn        func(user *eduboard.User) (error, *eduboard.User)
 	CreateUserFnInvoked bool
 
-	LoginFn        func(username string, password string) (error, *eduboard.User)
-	LoginFnInvoked bool
+	GetUserFn        func(id string) (error, *eduboard.User)
+	GetUserFnInvoked bool
 }
 
 func (uSM *UserService) CreateUser(user *eduboard.User) (error, *eduboard.User) {
@@ -35,7 +35,32 @@ func (uSM *UserService) CreateUser(user *eduboard.User) (error, *eduboard.User) 
 	return uSM.CreateUserFn(user)
 }
 
-func (uSM *UserService) Login(username string, password string) (error, *eduboard.User) {
-	uSM.LoginFnInvoked = true
-	return uSM.LoginFn(username, password)
+func (uSM *UserService) GetUser(id string) (error, *eduboard.User) {
+	uSM.GetUserFnInvoked = true
+	return uSM.GetUserFn(id)
+}
+
+type UserAuthenticationProvider struct {
+	LoginFn        func(username string, password string) (error, *eduboard.User)
+	LoginFnInvoked bool
+
+	LogoutFn        func(accessToken string) error
+	LogoutFnInvoked bool
+
+	CheckAuthenticationFn        func(sessionId string) (err error, ok bool)
+	CheckAuthenticationFnInvoked bool
+}
+
+func (uAM *UserAuthenticationProvider) Login(username string, password string) (error, *eduboard.User) {
+	uAM.LoginFnInvoked = true
+	return uAM.LoginFn(username, password)
+}
+
+func (uAM *UserAuthenticationProvider) Logout(sessionId string) error {
+	uAM.LogoutFnInvoked = true
+	return uAM.LogoutFn(sessionId)
+}
+func (uAM *UserAuthenticationProvider) CheckAuthentication(sessionId string) (err error, ok bool) {
+	uAM.CheckAuthenticationFnInvoked = true
+	return uAM.CheckAuthenticationFn(sessionId)
 }

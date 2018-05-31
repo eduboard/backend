@@ -10,6 +10,7 @@ import (
 )
 
 func TestNewCourseService(t *testing.T) {
+	t.Parallel()
 	var mockRepo mock.CourseRepository
 
 	service := NewCourseService(&mockRepo)
@@ -17,6 +18,7 @@ func TestNewCourseService(t *testing.T) {
 }
 
 func TestCourseService_GetAllCourses(t *testing.T) {
+	t.Parallel()
 	var mockRepo mock.CourseRepository
 	var service CourseService
 
@@ -60,6 +62,7 @@ func TestCourseService_GetAllCourses(t *testing.T) {
 }
 
 func TestCourseService_GetCourse(t *testing.T) {
+	t.Parallel()
 	var mockRepo mock.CourseRepository
 	var service CourseService
 
