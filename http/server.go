@@ -16,7 +16,7 @@ type AppServer struct {
 func (a *AppServer) initialize() {
 	router := httprouter.New()
 	a.httpServer = &http.Server{
-		Addr:           "localhost:8080",
+		Addr:           ":8080",
 		ReadTimeout:    1 * time.Second,
 		WriteTimeout:   1 * time.Second,
 		MaxHeaderBytes: 1 << 20,
