@@ -1,6 +1,8 @@
 package mock
 
-import "github.com/eduboard/backend"
+import (
+	"github.com/eduboard/backend"
+)
 
 // CourseService implements the eduboard.UserService interface to mock functions and record successful invocations.
 type CourseService struct {
@@ -10,6 +12,9 @@ type CourseService struct {
 	CoursesFn          func() (err error, courses []*eduboard.Course)
 	CoursesFuncInvoked bool
 }
+
+// Statically check that CourseService actually implements eduboard.CourseService interface
+var _ eduboard.CourseService = (*CourseService)(nil)
 
 func (cSM *CourseService) GetCourse(id string) (err error, course *eduboard.Course) {
 	cSM.CourseFnInvoked = true
@@ -23,16 +28,21 @@ func (cSM *CourseService) GetAllCourses() (err error, courses []*eduboard.Course
 
 // UserService implements the eduboard.UserService interface to mock functions and record successful invocations.
 type UserService struct {
-	CreateUserFn        func(user *eduboard.User) (error, *eduboard.User)
+	CreateUserFn        func(u *eduboard.User, password string) (error, *eduboard.User)
 	CreateUserFnInvoked bool
 
 	GetUserFn        func(id string) (error, *eduboard.User)
 	GetUserFnInvoked bool
+
+	UserAuthenticationProvider
 }
 
-func (uSM *UserService) CreateUser(user *eduboard.User) (error, *eduboard.User) {
+// Statically check that UserService actually implements eduboard.UserService interface
+var _ eduboard.UserService = (*UserService)(nil)
+
+func (uSM *UserService) CreateUser(u *eduboard.User, password string) (error, *eduboard.User) {
 	uSM.CreateUserFnInvoked = true
-	return uSM.CreateUserFn(user)
+	return uSM.CreateUserFn(u, password)
 }
 
 func (uSM *UserService) GetUser(id string) (error, *eduboard.User) {
@@ -41,7 +51,7 @@ func (uSM *UserService) GetUser(id string) (error, *eduboard.User) {
 }
 
 type UserAuthenticationProvider struct {
-	LoginFn        func(username string, password string) (error, *eduboard.User)
+	LoginFn        func(email string, password string) (error, *eduboard.User)
 	LoginFnInvoked bool
 
 	LogoutFn        func(accessToken string) error
@@ -51,9 +61,12 @@ type UserAuthenticationProvider struct {
 	CheckAuthenticationFnInvoked bool
 }
 
-func (uAM *UserAuthenticationProvider) Login(username string, password string) (error, *eduboard.User) {
+// Statically check that UserAuthenticationProvider actually implements eduboard.UserAuthenticationProvider interface
+var _ eduboard.UserAuthenticationProvider = (*UserAuthenticationProvider)(nil)
+
+func (uAM *UserAuthenticationProvider) Login(email string, password string) (error, *eduboard.User) {
 	uAM.LoginFnInvoked = true
-	return uAM.LoginFn(username, password)
+	return uAM.LoginFn(email, password)
 }
 
 func (uAM *UserAuthenticationProvider) Logout(sessionId string) error {
@@ -63,4 +76,37 @@ func (uAM *UserAuthenticationProvider) Logout(sessionId string) error {
 func (uAM *UserAuthenticationProvider) CheckAuthentication(sessionId string) (err error, ok bool) {
 	uAM.CheckAuthenticationFnInvoked = true
 	return uAM.CheckAuthenticationFn(sessionId)
+}
+
+type Authenticator interface {
+	Hash(password string) (string, error)
+	CompareHash(hashedPassword string, plainPassword string) (bool, error)
+	SessionId() string
+}
+
+type AuthenticatorMock struct {
+	HashFn        func(password string) (string, error)
+	HashFnInvoked bool
+
+	CompareHashFn        func(hashedPassword string, plainPassword string) (bool, error)
+	CompareHashFnInvoked bool
+
+	SessionIdFn        func() string
+	SessionIdFnInvoked bool
+}
+
+var _ Authenticator = (*AuthenticatorMock)(nil)
+
+func (uAM *AuthenticatorMock) Hash(password string) (string, error) {
+	uAM.HashFnInvoked = true
+	return uAM.HashFn(password)
+}
+
+func (uAM *AuthenticatorMock) CompareHash(hashedPassword string, plainPassword string) (bool, error) {
+	uAM.CompareHashFnInvoked = true
+	return uAM.CompareHashFn(hashedPassword, plainPassword)
+}
+func (uAM *AuthenticatorMock) SessionId() string {
+	uAM.SessionIdFnInvoked = true
+	return uAM.SessionIdFn()
 }

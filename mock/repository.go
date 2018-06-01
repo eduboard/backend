@@ -19,6 +19,8 @@ type CourseRepository struct {
 	FindAllFnInvoked bool
 }
 
+var _ eduboard.CourseRepository = (*CourseRepository)(nil)
+
 func (cRM *CourseRepository) Store(course *eduboard.Course) error {
 	cRM.StoreFnInvoked = true
 	return cRM.StoreFn(course)
@@ -41,7 +43,18 @@ type UserRepository struct {
 
 	FindFn        func(id string) (error, *eduboard.User)
 	FindFnInvoked bool
+
+	FindByEmailFn        func(email string) (error, *eduboard.User)
+	FindByEmailFnInvoked bool
+
+	FindBySessionIdFn        func(sessionId string) (error, *eduboard.User)
+	FindBySessionIdFnInvoked bool
+
+	UpdateSessionIdFn        func(user *eduboard.User) (error, *eduboard.User)
+	UpdateSessionIdFnInvoked bool
 }
+
+var _ eduboard.UserRepository = (*UserRepository)(nil)
 
 func (uRM *UserRepository) Store(user *eduboard.User) error {
 	uRM.StoreFnInvoked = true
@@ -51,4 +64,19 @@ func (uRM *UserRepository) Store(user *eduboard.User) error {
 func (uRM *UserRepository) Find(id string) (error, *eduboard.User) {
 	uRM.FindFnInvoked = true
 	return uRM.FindFn(id)
+}
+
+func (uRM *UserRepository)FindByEmail(email string) (error, *eduboard.User) {
+	uRM.FindByEmailFnInvoked = true
+	return uRM.FindByEmailFn(email)
+}
+
+func (uRM *UserRepository)FindBySessionId(sessionId string) (error, *eduboard.User) {
+	uRM.FindBySessionIdFnInvoked = true
+	return uRM.FindBySessionIdFn(sessionId)
+}
+
+func (uRM *UserRepository)UpdateSessionId(user *eduboard.User) (error, *eduboard.User) {
+	uRM.UpdateSessionIdFnInvoked = true
+	return uRM.UpdateSessionIdFn(user)
 }
