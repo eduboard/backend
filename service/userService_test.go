@@ -12,21 +12,21 @@ var r = mock.UserRepository{
 	FindFnInvoked: false,
 	FindFn: func(id string) (error, *eduboard.User) {
 		if id == "0" {
-			return nil, &eduboard.User{Id: "0"}
+			return nil, &eduboard.User{ID: "0"}
 		}
 		return errors.New("not found"), &eduboard.User{}
 	},
 	FindByEmailFnInvoked: false,
 	FindByEmailFn: func(email string) (error, *eduboard.User) {
 		if email == "existing@mail.com" {
-			return nil, &eduboard.User{Id: "0", PasswordHash: "password"}
+			return nil, &eduboard.User{ID: "0", PasswordHash: "password"}
 		}
 		return errors.New("not found"), &eduboard.User{}
 	},
-	FindBySessionIdFnInvoked: false,
-	FindBySessionIdFn: func(sessionId string) (error, *eduboard.User) {
-		if sessionId == "sessionID-0-0-0" {
-			return nil, &eduboard.User{Id: "1"}
+	FindBySessionIDFnInvoked: false,
+	FindBySessionIDFn: func(sessionID string) (error, *eduboard.User) {
+		if sessionID == "sessionID-0-0-0" {
+			return nil, &eduboard.User{ID: "1"}
 		}
 		return errors.New("not found"), &eduboard.User{}
 	},
@@ -34,8 +34,8 @@ var r = mock.UserRepository{
 	StoreFn: func(user *eduboard.User) error {
 		return nil
 	},
-	UpdateSessionIdFnInvoked: false,
-	UpdateSessionIdFn: func(user *eduboard.User) (error, *eduboard.User) {
+	UpdateSessionIDFnInvoked: false,
+	UpdateSessionIDFn: func(user *eduboard.User) (error, *eduboard.User) {
 		return nil, user
 	},
 }
@@ -51,8 +51,8 @@ var a = mock.AuthenticatorMock{
 		}
 		return true, nil
 	},
-	SessionIdFnInvoked: false,
-	SessionIdFn: func() string {
+	SessionIDFnInvoked: false,
+	SessionIDFn: func() string {
 		return "sessionID-0-0-0"
 	},
 }
@@ -81,7 +81,7 @@ func TestUserService_CreateUser(t *testing.T) {
 	for _, v := range testCases {
 		t.Run(v.name, func(t *testing.T) {
 			defer func() { r.FindByEmailFnInvoked = false }()
-			defer func() { a.SessionIdFnInvoked = false }()
+			defer func() { a.SessionIDFnInvoked = false }()
 			defer func() { r.StoreFnInvoked = false }()
 			defer func() { a.HashFnInvoked = false }()
 
@@ -97,8 +97,8 @@ func TestUserService_CreateUser(t *testing.T) {
 			assert.True(t, r.FindByEmailFnInvoked, "FindByEmail was not invoked")
 			assert.True(t, a.HashFnInvoked, "Hash was not invoked")
 			assert.Equal(t, v.password, user.PasswordHash, "did not hash password")
-			assert.True(t, a.SessionIdFnInvoked, "SessionId was not invoked")
-			assert.Equal(t, "sessionID-0-0-0", user.SessionId, "sessionId was not set")
+			assert.True(t, a.SessionIDFnInvoked, "SessionID was not invoked")
+			assert.Equal(t, "sessionID-0-0-0", user.SessionID, "sessionID was not set")
 			assert.True(t, r.StoreFnInvoked, "Store was not invoked")
 		})
 	}
@@ -148,22 +148,22 @@ func TestUserService_Login(t *testing.T) {
 		t.Run(v.name, func(t *testing.T) {
 			defer func() { r.FindByEmailFnInvoked = false }()
 			defer func() { a.CompareHashFnInvoked = false }()
-			defer func() { a.SessionIdFnInvoked = false }()
-			defer func() { r.UpdateSessionIdFnInvoked = false }()
+			defer func() { a.SessionIDFnInvoked = false }()
+			defer func() { r.UpdateSessionIDFnInvoked = false }()
 
 			err, user := us.Login(v.email, v.password)
 			if v.error {
 				assert.NotNil(t, err, "did not fail to log in user")
 				assert.Equal(t, &eduboard.User{}, user, "did not return empty user")
-				assert.False(t, r.UpdateSessionIdFnInvoked, "UpdateSessionId invoked")
+				assert.False(t, r.UpdateSessionIDFnInvoked, "UpdateSessionID invoked")
 				return
 			}
 			assert.Nil(t, err, "should not fail to login user")
 			assert.True(t, r.FindByEmailFnInvoked, "FindByEmail not invoked")
 			assert.True(t, a.CompareHashFnInvoked, "CompareHash not invoked")
-			assert.True(t, a.SessionIdFnInvoked, "SessionId not invoked")
-			assert.True(t, r.UpdateSessionIdFnInvoked, "UpdateSessionId not invoked")
-			assert.Equal(t, "sessionID-0-0-0", user.SessionId, "did not update sessionId")
+			assert.True(t, a.SessionIDFnInvoked, "SessionID not invoked")
+			assert.True(t, r.UpdateSessionIDFnInvoked, "UpdateSessionID not invoked")
+			assert.Equal(t, "sessionID-0-0-0", user.SessionID, "did not update sessionID")
 		})
 	}
 }
@@ -171,7 +171,7 @@ func TestUserService_Login(t *testing.T) {
 func TestUserService_Logout(t *testing.T) {
 	var testCases = []struct {
 		name      string
-		sessionId string
+		sessionID string
 		error     bool
 	}{
 		{"unknown session", "someOtherSession", true},
@@ -180,19 +180,19 @@ func TestUserService_Logout(t *testing.T) {
 
 	for _, v := range testCases {
 		t.Run(v.name, func(t *testing.T) {
-			defer func() { r.FindBySessionIdFnInvoked = false }()
-			defer func() { r.UpdateSessionIdFnInvoked = false }()
+			defer func() { r.FindBySessionIDFnInvoked = false }()
+			defer func() { r.UpdateSessionIDFnInvoked = false }()
 
-			err := us.Logout(v.sessionId)
+			err := us.Logout(v.sessionID)
 			if v.error {
 				assert.NotNil(t, err, "did not fail")
-				assert.True(t, r.FindBySessionIdFnInvoked, "FindBySessionId was not invoked")
-				assert.False(t, r.UpdateSessionIdFnInvoked, "UpdateSessionIdFn was invoked")
+				assert.True(t, r.FindBySessionIDFnInvoked, "FindBySessionID was not invoked")
+				assert.False(t, r.UpdateSessionIDFnInvoked, "UpdateSessionIDFn was invoked")
 				return
 			}
 			assert.Nil(t, err, "caused error logging out user")
-			assert.True(t, r.FindBySessionIdFnInvoked, "FindBySessionId was not invoked")
-			assert.True(t, r.UpdateSessionIdFnInvoked, "UpdateSessionId was not invoked")
+			assert.True(t, r.FindBySessionIDFnInvoked, "FindBySessionID was not invoked")
+			assert.True(t, r.UpdateSessionIDFnInvoked, "UpdateSessionID was not invoked")
 		})
 	}
 }
@@ -200,7 +200,7 @@ func TestUserService_Logout(t *testing.T) {
 func TestUserService_CheckAuthentication(t *testing.T) {
 	var testCases = []struct {
 		name      string
-		sessionId string
+		sessionID string
 		error     bool
 	}{
 		{"unknown session", "someOtherSession", true},
@@ -209,18 +209,18 @@ func TestUserService_CheckAuthentication(t *testing.T) {
 
 	for _, v := range testCases {
 		t.Run(v.name, func(t *testing.T) {
-			defer func() { r.FindBySessionIdFnInvoked = false }()
+			defer func() { r.FindBySessionIDFnInvoked = false }()
 
-			err, ok := us.CheckAuthentication(v.sessionId)
+			err, ok := us.CheckAuthentication(v.sessionID)
 			if v.error {
 				assert.NotNil(t, err, "did not fail")
 				assert.False(t, ok, "should not be ok")
-				assert.True(t, r.FindBySessionIdFnInvoked, "UpdateSessionIdFn was invoked")
+				assert.True(t, r.FindBySessionIDFnInvoked, "UpdateSessionIDFn was invoked")
 				return
 			}
 			assert.Nil(t, err, "caused error logging out user")
 			assert.True(t, ok, "should be ok")
-			assert.True(t, r.FindBySessionIdFnInvoked, "FindBySessionId was not invoked")
+			assert.True(t, r.FindBySessionIDFnInvoked, "FindBySessionID was not invoked")
 		})
 	}
 }

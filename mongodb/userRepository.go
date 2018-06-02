@@ -19,8 +19,8 @@ func newUserRepository(database *mgo.Database) *UserRepository {
 }
 
 func (u *UserRepository) Store(user *eduboard.User) error {
-	if user.Id == "" {
-		user.Id = bson.NewObjectId()
+	if user.ID == "" {
+		user.ID = bson.NewObjectId()
 	}
 	return u.c.Insert(user)
 }
@@ -38,8 +38,8 @@ func (u *UserRepository) Find(id string) (error, *eduboard.User) {
 	return nil, &result
 }
 
-func (u *UserRepository) FindBySessionId(accessToken string) (error, *eduboard.User) {
-	return u.findBy("sessionId", accessToken)
+func (u *UserRepository) FindBySessionID(accessToken string) (error, *eduboard.User) {
+	return u.findBy("sessionID", accessToken)
 }
 
 func (u *UserRepository) FindByEmail(email string) (error, *eduboard.User) {
@@ -56,8 +56,8 @@ func (u *UserRepository) findBy(key string, value string) (error, *eduboard.User
 	return nil, &result
 }
 
-func (u *UserRepository) UpdateSessionId(user *eduboard.User) (error, *eduboard.User) {
-	return u.updateValue(user.Id, "sessionId", user.SessionId)
+func (u *UserRepository) UpdateSessionID(user *eduboard.User) (error, *eduboard.User) {
+	return u.updateValue(user.ID, "sessionID", user.SessionID)
 }
 
 func (u *UserRepository) updateValue(id bson.ObjectId, key string, value string) (error, *eduboard.User) {

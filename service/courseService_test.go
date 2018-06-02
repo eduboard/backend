@@ -24,8 +24,8 @@ func TestCourseService_GetAllCourses(t *testing.T) {
 
 	service.r = &mockRepo
 
-	course1 := &eduboard.Course{Id: "1", Name: "Course 1"}
-	course2 := &eduboard.Course{Id: "2", Name: "Course 2"}
+	course1 := &eduboard.Course{ID: "1", Name: "Course 1"}
+	course2 := &eduboard.Course{ID: "2", Name: "Course 2"}
 
 	var testCases = []struct {
 		name     string
@@ -68,7 +68,7 @@ func TestCourseService_GetCourse(t *testing.T) {
 
 	service.r = &mockRepo
 
-	course1 := &eduboard.Course{Id: "1", Name: "Course 1"}
+	course1 := &eduboard.Course{ID: "1", Name: "Course 1"}
 
 	var testCases = []struct {
 		name     string

@@ -54,10 +54,10 @@ type UserAuthenticationProvider struct {
 	LoginFn        func(email string, password string) (error, *eduboard.User)
 	LoginFnInvoked bool
 
-	LogoutFn        func(accessToken string) error
+	LogoutFn        func(sessionID string) error
 	LogoutFnInvoked bool
 
-	CheckAuthenticationFn        func(sessionId string) (err error, ok bool)
+	CheckAuthenticationFn        func(sessionID string) (err error, ok bool)
 	CheckAuthenticationFnInvoked bool
 }
 
@@ -69,19 +69,19 @@ func (uAM *UserAuthenticationProvider) Login(email string, password string) (err
 	return uAM.LoginFn(email, password)
 }
 
-func (uAM *UserAuthenticationProvider) Logout(sessionId string) error {
+func (uAM *UserAuthenticationProvider) Logout(sessionID string) error {
 	uAM.LogoutFnInvoked = true
-	return uAM.LogoutFn(sessionId)
+	return uAM.LogoutFn(sessionID)
 }
-func (uAM *UserAuthenticationProvider) CheckAuthentication(sessionId string) (err error, ok bool) {
+func (uAM *UserAuthenticationProvider) CheckAuthentication(sessionID string) (err error, ok bool) {
 	uAM.CheckAuthenticationFnInvoked = true
-	return uAM.CheckAuthenticationFn(sessionId)
+	return uAM.CheckAuthenticationFn(sessionID)
 }
 
 type Authenticator interface {
 	Hash(password string) (string, error)
 	CompareHash(hashedPassword string, plainPassword string) (bool, error)
-	SessionId() string
+	SessionID() string
 }
 
 type AuthenticatorMock struct {
@@ -91,8 +91,8 @@ type AuthenticatorMock struct {
 	CompareHashFn        func(hashedPassword string, plainPassword string) (bool, error)
 	CompareHashFnInvoked bool
 
-	SessionIdFn        func() string
-	SessionIdFnInvoked bool
+	SessionIDFn        func() string
+	SessionIDFnInvoked bool
 }
 
 var _ Authenticator = (*AuthenticatorMock)(nil)
@@ -106,7 +106,7 @@ func (uAM *AuthenticatorMock) CompareHash(hashedPassword string, plainPassword s
 	uAM.CompareHashFnInvoked = true
 	return uAM.CompareHashFn(hashedPassword, plainPassword)
 }
-func (uAM *AuthenticatorMock) SessionId() string {
-	uAM.SessionIdFnInvoked = true
-	return uAM.SessionIdFn()
+func (uAM *AuthenticatorMock) SessionID() string {
+	uAM.SessionIDFnInvoked = true
+	return uAM.SessionIDFn()
 }

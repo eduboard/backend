@@ -13,8 +13,8 @@ func NewAuthMiddleware(provider eduboard.UserAuthenticationProvider, nextHandler
 			return
 		}
 
-		accessToken := cookie.Value
-		err, ok := provider.CheckAuthentication(accessToken)
+		sessionID := cookie.Value
+		err, ok := provider.CheckAuthentication(sessionID)
 		if err != nil || !ok {
 			w.WriteHeader(http.StatusForbidden)
 			return
