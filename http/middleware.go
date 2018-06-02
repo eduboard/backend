@@ -2,12 +2,11 @@ package http
 
 import (
 	"github.com/eduboard/backend"
-	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
-func NewAuthMiddleware(provider eduboard.UserAuthenticationProvider, nextHandler httprouter.Handle) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+func NewAuthMiddleware(provider eduboard.UserAuthenticationProvider, nextHandler http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		cookie, err := r.Cookie("sessionID")
 		if err != nil {
 			w.WriteHeader(http.StatusForbidden)
@@ -21,6 +20,6 @@ func NewAuthMiddleware(provider eduboard.UserAuthenticationProvider, nextHandler
 			return
 		}
 
-		nextHandler(w, r, p)
+		nextHandler.ServeHTTP(w, r)
 	}
 }

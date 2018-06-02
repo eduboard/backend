@@ -6,20 +6,28 @@ import (
 	"net/http"
 )
 
-func (a *AppServer) initializeRoutes(router *httprouter.Router) {
-	router.GET("/", a.serveFilesHandler())
-
-	// Registration
-	router.POST("/api/v1/register", a.registerUserHandler())
-	router.POST("/api/v1/login", a.loginUserHandler())
-	router.POST("/api/v1/logout", a.logoutUserHandler())
+func (a *AppServer) authenticatedRoutes() *httprouter.Router {
+	router := httprouter.New()
+	//router.GET("/index.html", a.serveFilesHandler())
+	//router.GET("/static/*", a.serveFilesHandler())
 
 	// User
 	router.GET("/api/v1/user/:id", a.getUserHandler())
 
 	// Courses
 	router.GET("/api/v1/courses/:id", a.getCourseHandler())
-	router.GET("/api/v1/courses/", NewAuthMiddleware(a.UserService, a.getAllCoursesHandler()))
+	router.GET("/api/v1/courses/", a.getAllCoursesHandler())
+	return router
+}
+
+func (a *AppServer) publicRoutes() *httprouter.Router {
+	router := httprouter.New()
+
+	// Registration
+	router.POST("/api/register", a.registerUserHandler())
+	router.POST("/api/login", a.loginUserHandler())
+	router.POST("/api/logout", a.logoutUserHandler())
+	return router
 }
 
 func (a *AppServer) serveFilesHandler() httprouter.Handle {

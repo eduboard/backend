@@ -15,10 +15,7 @@ func (a *Authenticator) Hash(password string) (string, error) {
 }
 
 func (a *Authenticator) CompareHash(hashedPassword string, plainPassword string) (bool, error) {
-	byteHash := []byte(hashedPassword)
-	bytePlain := []byte(plainPassword)
-
-	err := bcrypt.CompareHashAndPassword(byteHash, bytePlain)
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(plainPassword))
 	if err != nil {
 		return false, err
 	}
