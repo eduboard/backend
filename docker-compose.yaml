@@ -1,0 +1,15 @@
+version: '2'
+services:
+  mongo:
+    image: mongo:3.6
+    ports:
+      - "27017:27017"
+      - "28017:28017"
+  server:
+    image: eduboard-backend
+    ports:
+      - "8080:8080"
+    environment:
+      MONGO_URL: "mongodb://mongo:27017"
+    links:
+      - mongo:mongo

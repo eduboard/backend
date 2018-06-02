@@ -11,8 +11,8 @@ type Repository struct {
 	CourseRepository *CourseRepository
 }
 
-func Initialize() *Repository {
-	session, err := mgo.Dial("mongodb://localhost:27017")
+func Initialize(mongoURL string ) *Repository {
+	session, err := mgo.Dial(mongoURL)
 	if err != nil {
 		log.Fatalf("error connecting to mongoDB: %v", err)
 	}
