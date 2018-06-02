@@ -39,7 +39,7 @@ func (u *UserRepository) Find(id string) (error, *eduboard.User) {
 }
 
 func (u *UserRepository) FindBySessionId(accessToken string) (error, *eduboard.User) {
-	return u.findBy("accessToken", accessToken)
+	return u.findBy("sessionId", accessToken)
 }
 
 func (u *UserRepository) FindByEmail(email string) (error, *eduboard.User) {
@@ -57,7 +57,7 @@ func (u *UserRepository) findBy(key string, value string) (error, *eduboard.User
 }
 
 func (u *UserRepository) UpdateSessionId(user *eduboard.User) (error, *eduboard.User) {
-	return u.updateValue(user.Id, "accessToken", user.SessionId)
+	return u.updateValue(user.Id, "sessionId", user.SessionId)
 }
 
 func (u *UserRepository) updateValue(id bson.ObjectId, key string, value string) (error, *eduboard.User) {

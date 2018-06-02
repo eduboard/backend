@@ -14,14 +14,19 @@ type AppServer struct {
 }
 
 func (a *AppServer) initialize() {
-	router := a.authenticatedRoutes()
+	protected := a.authenticatedRoutes()
+	public := a.publicRoutes()
+
+	mux := http.NewServeMux()
+	mux.Handle("/api/v1/", NewAuthMiddleware(a.UserService, protected))
+	mux.Handle("/api/", public)
 
 	a.httpServer = &http.Server{
 		Addr:           ":8080",
 		ReadTimeout:    1 * time.Second,
 		WriteTimeout:   1 * time.Second,
 		MaxHeaderBytes: 1 << 20,
-		Handler:        router,
+		Handler:        mux,
 	}
 }
 

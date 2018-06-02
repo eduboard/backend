@@ -116,5 +116,5 @@ func (a *AppServer) getUserHandler() httprouter.Handle {
 
 func createCookie(value string) http.Cookie {
 	expire := time.Now().Add(24 * time.Hour)
-	return http.Cookie{Name: "sessionId", Value: value, Path: "/", Expires: expire, MaxAge: 86400}
+	return http.Cookie{Name: "sessionID", Value: value, Path: "/", Expires: expire, MaxAge: 86400}
 }
