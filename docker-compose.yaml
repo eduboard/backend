@@ -6,7 +6,7 @@ services:
       - "27017:27017"
       - "28017:28017"
   server:
-    image: eduboard-backend
+    image: eduboard/backend:latest
     ports:
       - "8080:8080"
     environment:
