@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/eduboard/backend"
-	"github.com/julienschmidt/httprouter"
+	"log"
 	"net/http"
 	"time"
 )
@@ -14,19 +14,23 @@ type AppServer struct {
 }
 
 func (a *AppServer) initialize() {
-	router := httprouter.New()
+	protected := a.authenticatedRoutes()
+	public := a.publicRoutes()
+
+	mux := http.NewServeMux()
+	mux.Handle("/api/v1/", NewAuthMiddleware(a.UserService, protected))
+	mux.Handle("/api/", public)
+
 	a.httpServer = &http.Server{
 		Addr:           ":8080",
 		ReadTimeout:    1 * time.Second,
 		WriteTimeout:   1 * time.Second,
 		MaxHeaderBytes: 1 << 20,
-		Handler:        router,
+		Handler:        mux,
 	}
-
-	a.initializeRoutes(router)
 }
 
 func (a *AppServer) Run() {
 	a.initialize()
-	a.httpServer.ListenAndServe()
+	log.Fatal(a.httpServer.ListenAndServe())
 }

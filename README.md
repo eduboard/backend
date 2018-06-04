@@ -2,7 +2,7 @@
 The backend for eduBoard, written in Go with [httprouter](https://github.com/julienschmidt/httprouter) and MongoDB.
 
 ## Installing
-- Run `dep eunsure` to install dependencies
+- Run `dep ensure` to install dependencies
 
 ## Endpoints
 
