@@ -3,7 +3,7 @@ package config
 import "os"
 
 type config struct {
-	Port,
+	Host,
 	MongoHost,
 	MongoPort,
 	MongoDB,
@@ -13,9 +13,9 @@ type config struct {
 }
 
 func GetConfig() config {
-	port, ok := os.LookupEnv("PORT")
+	host, ok := os.LookupEnv("HOST")
 	if !ok {
-		port = "8080"
+		host = ":8080"
 	}
 
 	mongoHost, ok := os.LookupEnv("MONGO_HOST")
@@ -49,7 +49,7 @@ func GetConfig() config {
 	}
 
 	return config{
-		Port:      port,
+		Host:      host,
 		MongoHost: mongoHost,
 		MongoPort: mongoPort,
 		MongoDB:   mongoDB,

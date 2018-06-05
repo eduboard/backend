@@ -11,7 +11,7 @@ func TestGetConfig(t *testing.T) {
 		key   string
 		value string
 	}{
-		{"PORT", "test"},
+		{"HOST", "test"},
 		{"MONGO_HOST", "testurl"},
 		{"MONGO_PORT", "testport"},
 		{"MONGO_DB", "testdb"},
@@ -36,7 +36,7 @@ func TestGetConfig(t *testing.T) {
 				"testdir"}},
 		{"unset", true,
 			config{
-				"8080",
+				":8080",
 				"localhost",
 				"27017",
 				"eduboard",

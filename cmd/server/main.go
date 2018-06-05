@@ -24,6 +24,8 @@ func main() {
 	cS := service.NewCourseService(repository.CourseRepository)
 
 	server := http.AppServer{
+		Host: c.Host,
+		Static: c.StaticDir,
 		UserService:   uS,
 		CourseService: cS,
 	}
