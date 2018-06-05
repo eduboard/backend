@@ -20,6 +20,7 @@ func (a *AppServer) initialize() {
 	mux := http.NewServeMux()
 	mux.Handle("/api/v1/", NewAuthMiddleware(a.UserService, protected))
 	mux.Handle("/api/", public)
+	mux.Handle("/", http.FileServer(http.Dir("./static")))
 
 	a.httpServer = &http.Server{
 		Addr:           ":8080",

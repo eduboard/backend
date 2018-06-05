@@ -6,12 +6,12 @@ import (
 	"testing"
 )
 
-func TestAuthenticator_CreateAccessToken(t *testing.T) {
+func TestAuthenticator_SessionID(t *testing.T) {
 	t.Parallel()
 	authenticator := Authenticator{}
-	sessionId := authenticator.SessionId()
+	sessionID := authenticator.SessionID()
 
-	id, err := uuid.FromString(sessionId)
+	id, err := uuid.FromString(sessionID)
 	assert.Nil(t, err, "should not cause error")
 	assert.Equal(t, byte(4), id.Version(), "should create UUID v4")
 }

@@ -47,11 +47,11 @@ type UserRepository struct {
 	FindByEmailFn        func(email string) (error, *eduboard.User)
 	FindByEmailFnInvoked bool
 
-	FindBySessionIdFn        func(sessionId string) (error, *eduboard.User)
-	FindBySessionIdFnInvoked bool
+	FindBySessionIDFn        func(sessionID string) (error, *eduboard.User)
+	FindBySessionIDFnInvoked bool
 
-	UpdateSessionIdFn        func(user *eduboard.User) (error, *eduboard.User)
-	UpdateSessionIdFnInvoked bool
+	UpdateSessionIDFn        func(user *eduboard.User) (error, *eduboard.User)
+	UpdateSessionIDFnInvoked bool
 }
 
 var _ eduboard.UserRepository = (*UserRepository)(nil)
@@ -71,12 +71,12 @@ func (uRM *UserRepository)FindByEmail(email string) (error, *eduboard.User) {
 	return uRM.FindByEmailFn(email)
 }
 
-func (uRM *UserRepository)FindBySessionId(sessionId string) (error, *eduboard.User) {
-	uRM.FindBySessionIdFnInvoked = true
-	return uRM.FindBySessionIdFn(sessionId)
+func (uRM *UserRepository)FindBySessionID(sessionID string) (error, *eduboard.User) {
+	uRM.FindBySessionIDFnInvoked = true
+	return uRM.FindBySessionIDFn(sessionID)
 }
 
-func (uRM *UserRepository)UpdateSessionId(user *eduboard.User) (error, *eduboard.User) {
-	uRM.UpdateSessionIdFnInvoked = true
-	return uRM.UpdateSessionIdFn(user)
+func (uRM *UserRepository)UpdateSessionID(user *eduboard.User) (error, *eduboard.User) {
+	uRM.UpdateSessionIDFnInvoked = true
+	return uRM.UpdateSessionIDFn(user)
 }
