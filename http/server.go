@@ -8,6 +8,8 @@ import (
 )
 
 type AppServer struct {
+	Host          string
+	Static        string
 	UserService   eduboard.UserService
 	CourseService eduboard.CourseService
 	httpServer    *http.Server
@@ -20,9 +22,10 @@ func (a *AppServer) initialize() {
 	mux := http.NewServeMux()
 	mux.Handle("/api/v1/", NewAuthMiddleware(a.UserService, protected))
 	mux.Handle("/api/", public)
+	mux.Handle("/", http.FileServer(http.Dir(a.Static)))
 
 	a.httpServer = &http.Server{
-		Addr:           ":8080",
+		Addr:           a.Host,
 		ReadTimeout:    1 * time.Second,
 		WriteTimeout:   1 * time.Second,
 		MaxHeaderBytes: 1 << 20,

@@ -14,7 +14,7 @@ type UserService struct {
 type Authenticator interface {
 	Hash(password string) (string, error)
 	CompareHash(hashedPassword string, plainPassword string) (bool, error)
-	SessionId() string
+	SessionID() string
 }
 
 func NewUserService(repository eduboard.UserRepository) *UserService {
@@ -39,7 +39,7 @@ func (uS *UserService) CreateUser(user *eduboard.User, password string) (error, 
 		return err, &eduboard.User{}
 	}
 	user.PasswordHash = hashedPassword
-	user.SessionId = uS.a.SessionId()
+	user.SessionID = uS.a.SessionID()
 
 	err = uS.r.Store(user)
 	if err != nil {
@@ -66,8 +66,8 @@ func (uS *UserService) Login(email string, password string) (error, *eduboard.Us
 		return errors.New("invalid password"), &eduboard.User{}
 	}
 
-	user.SessionId = uS.a.SessionId()
-	err, user = uS.r.UpdateSessionId(user)
+	user.SessionID = uS.a.SessionID()
+	err, user = uS.r.UpdateSessionID(user)
 	if err != nil {
 		return err, &eduboard.User{}
 	}
@@ -75,20 +75,20 @@ func (uS *UserService) Login(email string, password string) (error, *eduboard.Us
 	return nil, user
 }
 
-func (uS *UserService) Logout(sessionId string) error {
-	err, user := uS.r.FindBySessionId(sessionId)
+func (uS *UserService) Logout(sessionID string) error {
+	err, user := uS.r.FindBySessionID(sessionID)
 	if err != nil {
 		return err
 	}
 
-	user.SessionId = ""
-	uS.r.UpdateSessionId(user)
+	user.SessionID = ""
+	uS.r.UpdateSessionID(user)
 
 	return nil
 }
 
-func (uS *UserService) CheckAuthentication(sessionId string) (err error, ok bool) {
-	err, _ = uS.r.FindBySessionId(sessionId)
+func (uS *UserService) CheckAuthentication(sessionID string) (err error, ok bool) {
+	err, _ = uS.r.FindBySessionID(sessionID)
 	if err != nil {
 		return err, false
 	}

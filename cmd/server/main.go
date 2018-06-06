@@ -2,25 +2,30 @@ package main
 
 import (
 	"fmt"
+	"github.com/eduboard/backend/config"
 	"github.com/eduboard/backend/http"
 	"github.com/eduboard/backend/mongodb"
 	"github.com/eduboard/backend/service"
-	"os"
 )
 
 func main() {
-	var mongoURL = "mongodb://localhost:27017"
-	v, ok := os.LookupEnv("MONGO_URL")
-	if ok {
-		mongoURL = v
+
+	c := config.GetConfig()
+	mongoConfig := mongodb.DBConfig{
+		URL:      fmt.Sprintf("%s:%s", c.MongoHost, c.MongoPort),
+		Database: c.MongoDB,
+		Username: c.MongoUser,
+		Password: c.MongoPass,
 	}
 
-	repository := mongodb.Initialize(mongoURL)
+	repository := mongodb.Initialize(mongoConfig)
 
 	uS := service.NewUserService(repository.UserRepository)
 	cS := service.NewCourseService(repository.CourseRepository)
 
 	server := http.AppServer{
+		Host: c.Host,
+		Static: c.StaticDir,
 		UserService:   uS,
 		CourseService: cS,
 	}

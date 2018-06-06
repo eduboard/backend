@@ -15,7 +15,7 @@ func (a *AppServer) registerUserHandler() httprouter.Handle {
 		Password string `json:"password"`
 	}
 	type response struct {
-		Id    string `json:"id"`
+		ID    string `json:"id"`
 		Email string `json:"email"`
 	}
 
@@ -37,9 +37,9 @@ func (a *AppServer) registerUserHandler() httprouter.Handle {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		response := response{Id: user.Id.Hex(), Email: user.Email}
+		response := response{ID: user.ID.Hex(), Email: user.Email}
 
-		cookie := createCookie(user.SessionId)
+		cookie := createCookie(user.SessionID)
 		http.SetCookie(w, &cookie)
 		if err = json.NewEncoder(w).Encode(response); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -72,7 +72,7 @@ func (a *AppServer) loginUserHandler() httprouter.Handle {
 			return
 		}
 
-		cookie := createCookie(user.SessionId)
+		cookie := createCookie(user.SessionID)
 		response := response{user.Name, user.Surname, user.Email}
 		http.SetCookie(w, &cookie)
 		if err = json.NewEncoder(w).Encode(response); err != nil {
@@ -83,12 +83,12 @@ func (a *AppServer) loginUserHandler() httprouter.Handle {
 
 func (a *AppServer) logoutUserHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		sessionId, err := r.Cookie("sessionId")
+		sessionID, err := r.Cookie("sessionID")
 		if err != nil {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-		err = a.UserService.Logout(sessionId.Value)
+		err = a.UserService.Logout(sessionID.Value)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return

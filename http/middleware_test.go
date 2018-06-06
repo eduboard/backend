@@ -11,11 +11,11 @@ import (
 
 func TestAppServer_NewAuthMiddleware(t *testing.T) {
 	var as = &mock.UserAuthenticationProvider{
-		CheckAuthenticationFn: func(sessionId string) (err error, ok bool) {
-			if sessionId == "" {
-				return errors.New("empty sessionId"), false
+		CheckAuthenticationFn: func(sessionID string) (err error, ok bool) {
+			if sessionID == "" {
+				return errors.New("empty sessionID"), false
 			}
-			if sessionId == "invalid" {
+			if sessionID == "invalid" {
 				return errors.New("not found"), false
 			}
 			return nil, true
