@@ -44,7 +44,7 @@ func TestAppServer_NewAuthMiddleware(t *testing.T) {
 		}
 
 		t.Run(v.name, func(t *testing.T) {
-			handler := NewAuthMiddleware(as, testHandler)
+			handler := NewAuthMiddleware(as)(testHandler)
 			if v.enter {
 				assert.True(t, handlerEntered, "handler was not entered")
 			}

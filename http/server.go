@@ -19,10 +19,12 @@ func (a *AppServer) initialize() {
 	protected := a.authenticatedRoutes()
 	public := a.publicRoutes()
 
+	privateChain := Chain(protected, Logger, NewAuthMiddleware(a.UserService))
+
 	mux := http.NewServeMux()
-	mux.Handle("/api/v1/", NewAuthMiddleware(a.UserService, protected))
+	mux.Handle("/api/v1/", privateChain)
 	mux.Handle("/api/", public)
-	mux.Handle("/", http.FileServer(http.Dir(a.Static)))
+	mux.Handle("/", Logger(http.FileServer(http.Dir(a.Static))))
 
 	a.httpServer = &http.Server{
 		Addr:           a.Host,
