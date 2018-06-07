@@ -9,9 +9,9 @@ The backend for eduBoard, written in Go with [httprouter](https://github.com/jul
 - `/` reservered for frontend static files
 
 ### Registration
-- `/api/v1/register` Register a new user.
-- `/api/v1/login` Login an existing user.
-- `/api/v1/logout` Logout current user.
+- `/api/register` Register a new user.
+- `/api/login` Login an existing user.
+- `/api/logout` Logout current user.
 
 ### User
 - `/api/v1/user/:id/courses/` GET users courses.
