@@ -4,6 +4,12 @@ The backend for eduBoard, written in Go with [httprouter](https://github.com/jul
 ## Installing
 - Run `dep ensure` to install dependencies
 
+### Traefik (optional)
+The traefik reverse proxy is for https support. To use it you have to
+- change email to a valid email in traefik.toml
+- change domain to your domain in traefik.toml
+- move the file to /opt/traefik/traefik.toml
+
 ## Endpoints
 
 - `/` reservered for frontend static files
