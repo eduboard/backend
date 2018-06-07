@@ -4,10 +4,37 @@ import (
 	"errors"
 	"github.com/eduboard/backend/mock"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
+
+func TestChain(t *testing.T) {
+	var final, oneCalled, twoCalled, threeCalled = &mock.Check{}, &mock.Check{}, &mock.Check{}, &mock.Check{}
+	finalHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.True(t, oneCalled.Passed, "first wrapped function not called")
+		assert.True(t, twoCalled.Passed, "second wrapped function not called")
+		assert.True(t, threeCalled.Passed, "third wrapped function not called")
+		final.Passed = true
+		n, err := w.Write([]byte("ok"))
+		assert.Equal(t, 2, n)
+		assert.Nil(t, err)
+	})
+
+	handlers := mock.GenerateCheckedMiddlewares(oneCalled, twoCalled, threeCalled)
+	c := Chain(finalHandler, handlers...)
+	req := httptest.NewRequest("", "/", nil)
+	rr := httptest.NewRecorder()
+	c.ServeHTTP(rr, req)
+
+	res := rr.Result()
+	defer res.Body.Close()
+	resBody, _ := ioutil.ReadAll(res.Body)
+
+	assert.True(t, final.Passed, "inner wrapped function not called")
+	assert.Equal(t, "ok", string(resBody), "response not correct")
+}
 
 func TestAppServer_NewAuthMiddleware(t *testing.T) {
 	var as = &mock.UserAuthenticationProvider{

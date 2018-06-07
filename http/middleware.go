@@ -6,18 +6,16 @@ import (
 	"net/http"
 )
 
-type Middlware func(handler http.Handler) http.Handler
-
 // Chain takes a final http.Handler and a list of Middlewares and builds a call chain such that
 // an incoming request passes all Middlwares in the order they were appended and finally reaches final.
-func Chain(final http.Handler, m ...Middlware) http.Handler {
+func Chain(final http.Handler, m ...func(handler http.Handler) http.Handler) http.Handler {
 	for i := len(m) - 1; i >= 0; i-- {
 		final = m[i](final)
 	}
 	return final
 }
 
-func NewAuthMiddleware(provider eduboard.UserAuthenticationProvider) Middlware {
+func NewAuthMiddleware(provider eduboard.UserAuthenticationProvider) func(handler http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie("sessionID")
