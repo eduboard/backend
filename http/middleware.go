@@ -2,8 +2,8 @@ package http
 
 import (
 	"github.com/eduboard/backend"
-	"log"
 	"net/http"
+	"fmt"
 )
 
 // Chain takes a final http.Handler and a list of Middlewares and builds a call chain such that
@@ -38,7 +38,7 @@ func NewAuthMiddleware(provider eduboard.UserAuthenticationProvider) func(handle
 
 func Logger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s: %s %s", r.RemoteAddr, r.Method, r.URL.Path)
+		fmt.Printf("%s: %s %s", r.RemoteAddr, r.Method, r.URL.Path)
 		next.ServeHTTP(w, r)
 	})
 }

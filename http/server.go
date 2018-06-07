@@ -23,7 +23,7 @@ func (a *AppServer) initialize() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/v1/", privateChain)
-	mux.Handle("/api/", public)
+	mux.Handle("/api/", Logger(public))
 	mux.Handle("/", Logger(http.FileServer(http.Dir(a.Static))))
 
 	a.httpServer = &http.Server{
