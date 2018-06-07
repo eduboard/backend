@@ -11,6 +11,12 @@ The backend needs MongoDB to be connected. Connection parameters can be changed 
 ### Docker
 The easiest way to run the backend is using Docker. Just run `docker-compose up` and you are done.
 
+### Traefik (optional)
+The traefik reverse proxy is used for https support. Some changes need to be made to traefik.toml 
+- change email to a valid email
+- change domain to your domain
+- move the file to /opt/traefik/traefik.toml
+
 ## Endpoints
 
 - `/` reservered for frontend static files
