@@ -1,4 +1,5 @@
-# backend [![Build Status](https://travis-ci.org/eduboard/backend.svg?branch=master)](https://travis-ci.org/eduboard/backend)
+# backend [![Build Status](https://travis-ci.org/eduboard/backend.svg?branch=master)](https://travis-ci.org/eduboard/backend) [![codecov](https://codecov.io/gh/eduboard/backend/branch/master/graph/badge.svg)](https://codecov.io/gh/eduboard/backend)
+
 The backend for eduBoard, written in Go with [httprouter](https://github.com/julienschmidt/httprouter) and MongoDB.
 
 ## Installing
