@@ -1,5 +1,5 @@
 comment:
-  layout: "dfiles"
+  layout: "files"
   behavior: default
   requires_change: false
 
