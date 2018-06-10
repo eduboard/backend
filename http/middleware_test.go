@@ -63,7 +63,7 @@ func TestAppServer_NewAuthMiddleware(t *testing.T) {
 	}
 
 	for _, v := range testCases {
-		handlerEntered := true
+		handlerEntered := false
 
 		var testHandler http.HandlerFunc = func(writer http.ResponseWriter, request *http.Request) {
 			assert.True(t, v.enter, "handler should not have been entered")
@@ -72,9 +72,6 @@ func TestAppServer_NewAuthMiddleware(t *testing.T) {
 
 		t.Run(v.name, func(t *testing.T) {
 			handler := NewAuthMiddleware(as)(testHandler)
-			if v.enter {
-				assert.True(t, handlerEntered, "handler was not entered")
-			}
 
 			req := httptest.NewRequest("", "/", nil)
 			if v.cookie {
@@ -84,8 +81,53 @@ func TestAppServer_NewAuthMiddleware(t *testing.T) {
 			rr := httptest.NewRecorder()
 			handler.ServeHTTP(rr, req)
 			assert.Equal(t, v.status, rr.Code, "status code does not match")
-
 			assert.True(t, as.CheckAuthenticationFnInvoked, "authentication was not actually checked")
+			assert.Equal(t, v.enter, handlerEntered, "handler was not called as expected")
+		})
+	}
+}
+
+func TestCORS(t *testing.T) {
+	var testCases = []struct {
+		name   string
+		method string
+		enter  bool
+	}{
+		{"GET", "GET", true},
+		{"PUT", "PUT", true},
+		{"POST", "POST", true},
+		{"OPTIONS", "OPTIONS", false},
+	}
+
+	var expectedHeader = map[string]string{
+		"Access-Control-Allow-Origin":  "*",
+		"Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE",
+		"Access-Control-Allow-Headers": "Accept, Content-Type, Content-Length, Accept-Encoding",
+	}
+
+	for _, v := range testCases {
+		handlerEntered := false
+
+		var testHandler http.HandlerFunc = func(writer http.ResponseWriter, request *http.Request) {
+			assert.True(t, v.enter, "handler should not have been entered")
+			handlerEntered = true
+		}
+
+		t.Run(v.name, func(t *testing.T) {
+			handler := CORS(testHandler)
+			req := httptest.NewRequest(v.method, "/", nil)
+			rr := httptest.NewRecorder()
+
+			handler.ServeHTTP(rr, req)
+
+			res := rr.Result()
+			h := res.Header
+
+			for k, v := range expectedHeader {
+				assert.Equalf(t, v, h.Get(k), "header %s does not match expected value", k)
+			}
+			assert.Equal(t, http.StatusOK, res.StatusCode, "http status not 200")
+			assert.Equal(t, v.enter, handlerEntered, "next handler was not called as expected")
 		})
 	}
 }
