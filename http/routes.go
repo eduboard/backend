@@ -9,7 +9,7 @@ func (a *AppServer) authenticatedRoutes() *httprouter.Router {
 
 	// User
 	router.GET("/api/v1/users/:id", a.GetUserHandler())
-	router.GET("/api/v1/user/me", a.GetMeHandler())
+	router.GET("/api/v1/me", a.GetMeHandler())
 
 	// Courses
 	router.GET("/api/v1/courses/:id", a.getCourseHandler())

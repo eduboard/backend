@@ -26,6 +26,30 @@ func (cSM *CourseService) GetAllCourses() (err error, courses []*eduboard.Course
 	return cSM.CoursesFn()
 }
 
+// UserService implements the eduboard.UserService interface to mock functions and record successful invocations.
+type UserService struct {
+	CreateUserFn        func(u *eduboard.User, password string) (error, *eduboard.User)
+	CreateUserFnInvoked bool
+
+	GetUserFn        func(id string) (error, *eduboard.User)
+	GetUserFnInvoked bool
+
+	UserAuthenticationProvider
+}
+
+// Statically check that UserService actually implements eduboard.UserService interface
+var _ eduboard.UserService = (*UserService)(nil)
+
+func (uSM *UserService) CreateUser(u *eduboard.User, password string) (error, *eduboard.User) {
+	uSM.CreateUserFnInvoked = true
+	return uSM.CreateUserFn(u, password)
+}
+
+func (uSM *UserService) GetUser(id string) (error, *eduboard.User) {
+	uSM.GetUserFnInvoked = true
+	return uSM.GetUserFn(id)
+}
+
 type UserAuthenticationProvider struct {
 	LoginFn        func(email string, password string) (error, *eduboard.User)
 	LoginFnInvoked bool

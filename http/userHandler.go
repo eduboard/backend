@@ -118,9 +118,13 @@ func (a *AppServer) LogoutUserHandler() httprouter.Handle {
 func (a *AppServer) GetUserHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		id := p.ByName("id")
+		if id == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 		err, user := a.UserService.GetUser(id)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 		if err = json.NewEncoder(w).Encode(user); err != nil {
@@ -139,6 +143,11 @@ func (a *AppServer) GetMeHandler() httprouter.Handle {
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		id := r.Header.Get("userID")
+		if id == "" {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		err, user := a.UserService.GetUser(id)
 		if err != nil {
 			w.WriteHeader(http.StatusNotFound)

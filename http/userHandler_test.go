@@ -40,7 +40,7 @@ func TestAppServer_RegisterUserHandler(t *testing.T) {
 	for _, v := range testCases {
 		t.Run(v.name, func(t *testing.T) {
 			mockService.CreateUserFnInvoked = false
-			r := httptest.NewRequest("GET", "/", strings.NewReader(v.body))
+			r := httptest.NewRequest("POST", "/", strings.NewReader(v.body))
 			rr := httptest.NewRecorder()
 
 			appServer.RegisterUserHandler()(rr, r, httprouter.Params{})
@@ -89,7 +89,7 @@ func TestAppServer_LoginUserHandler(t *testing.T) {
 	for _, v := range testCases {
 		t.Run(v.name, func(t *testing.T) {
 			mockService.LoginFnInvoked = false
-			r := httptest.NewRequest("GET", "/", strings.NewReader(v.body))
+			r := httptest.NewRequest("POST", "/", strings.NewReader(v.body))
 			rr := httptest.NewRecorder()
 
 			appServer.LoginUserHandler()(rr, r, httprouter.Params{})
@@ -134,7 +134,7 @@ func TestAppServer_LogoutUserHandler(t *testing.T) {
 	for _, v := range testCases {
 		t.Run(v.name, func(t *testing.T) {
 			mockService.LogoutFnInvoked = false
-			r := httptest.NewRequest("GET", "/", nil)
+			r := httptest.NewRequest("POST", "/", nil)
 			c := http.Cookie{Name: "sessionID", Value: v.sessionID}
 			r.AddCookie(&c)
 			rr := httptest.NewRecorder()
@@ -149,9 +149,96 @@ func TestAppServer_LogoutUserHandler(t *testing.T) {
 				return
 			}
 			assert.True(t, mockService.LogoutFnInvoked, "Logout was not invoked when it should")
-			
+
 			if v.status == 200 {
 				assert.NotEmptyf(t, rr.HeaderMap["Set-Cookie"], "cookie was not set on successful registration")
+			}
+		})
+	}
+}
+
+func TestAppServer_GetUserHandler(t *testing.T) {
+	mockService := mock.UserService{}
+	mockService.GetUserFn = func(id string) (error, *eduboard.User) {
+		if id != "userId" {
+			return errors.New("not found"), &eduboard.User{}
+		}
+		return nil, &eduboard.User{Name: "name"}
+	}
+	appServer := AppServer{UserService: &mockService}
+
+	var testCases = []struct {
+		name   string
+		userID string
+		status int
+	}{
+		{"no userID", "", 400},
+		{"bad userID", "someId", 404},
+		{"success", "userId", 200},
+	}
+
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			mockService.GetUserFnInvoked = false
+			r := httptest.NewRequest("GET", "/", nil)
+			rr := httptest.NewRecorder()
+
+			appServer.GetUserHandler()(rr, r, httprouter.Params{httprouter.Param{"id", v.userID}})
+
+			assert.Equal(t, v.status, rr.Code, "bad response code")
+			if v.userID == "" {
+				assert.False(t, mockService.GetUserFnInvoked, "GetUser was invoked when it should not")
+				assert.Equal(t, v.status, rr.Code, "bad response code")
+				assert.Empty(t, rr.Body, "body should not be empty")
+				return
+			}
+			assert.True(t, mockService.GetUserFnInvoked, "GetUser was not invoked when it should")
+			if v.status == 200 {
+				assert.NotEmptyf(t, rr.Body, "body should not be empty")
+			}
+		})
+	}
+}
+
+func TestAppServer_GetMeHandler(t *testing.T) {
+	mockService := mock.UserService{}
+	mockService.GetUserFn = func(id string) (error, *eduboard.User) {
+		if id != "userId" {
+			return errors.New("not found"), &eduboard.User{}
+		}
+		return nil, &eduboard.User{Name: "name"}
+	}
+	appServer := AppServer{UserService: &mockService}
+
+	var testCases = []struct {
+		name   string
+		userID string
+		status int
+	}{
+		{"no userID", "", 400},
+		{"bad userID", "someId", 404},
+		{"success", "userId", 200},
+	}
+
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			mockService.GetUserFnInvoked = false
+			r := httptest.NewRequest("GET", "/", nil)
+			r.Header.Set("userID", v.userID)
+			rr := httptest.NewRecorder()
+
+			appServer.GetMeHandler()(rr, r, httprouter.Params{})
+
+			assert.Equal(t, v.status, rr.Code, "bad response code")
+			if v.userID == "" {
+				assert.False(t, mockService.GetUserFnInvoked, "GetUser was invoked when it should not")
+				assert.Equal(t, v.status, rr.Code, "bad response code")
+				assert.Empty(t, rr.Body, "body should not be empty")
+				return
+			}
+			assert.True(t, mockService.GetUserFnInvoked, "GetUser was not invoked when it should")
+			if v.status == 200 {
+				assert.NotEmptyf(t, rr.Body, "body should not be empty")
 			}
 		})
 	}

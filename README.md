@@ -28,7 +28,8 @@ The traefik reverse proxy is used for https support. Some changes need to be mad
 - `/api/logout` Logout current user.
 
 ### User
-- `/api/v1/user/:id/courses` GET users courses.
+- `/api/v1/me` GET own user (based on SessionToken).
+- `/api/v1/users/:id` GET users.
 
 ### Courses
 - `/api/v1/courses/` GET all accessible courses
