@@ -9,14 +9,18 @@ import (
 	"time"
 )
 
-func (a *AppServer) registerUserHandler() httprouter.Handle {
+func (a *AppServer) RegisterUserHandler() httprouter.Handle {
 	type request struct {
+		Name     string `json:"name"`
+		Surname  string `json:"surname"`
 		Email    string `json:"email"`
 		Password string `json:"password"`
 	}
 	type response struct {
-		ID    string `json:"id"`
-		Email string `json:"email"`
+		ID      string `json:"id"`
+		Name    string `json:"name"`
+		Surname string `json:"surname"`
+		Email   string `json:"email"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -32,14 +36,23 @@ func (a *AppServer) registerUserHandler() httprouter.Handle {
 		}
 
 		userModel.Email = request.Email
+		userModel.Name = request.Name
+		userModel.Surname = request.Surname
+
 		err, user := a.UserService.CreateUser(&userModel, request.Password)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		response := response{ID: user.ID.Hex(), Email: user.Email}
 
-		cookie := createCookie(user.SessionID)
+		response := response{
+			ID:      user.ID.Hex(),
+			Name:    user.Name,
+			Surname: user.Surname,
+			Email:   user.Email,
+		}
+
+		cookie := createCookie(user.SessionID, user.SessionExpires)
 		http.SetCookie(w, &cookie)
 		if err = json.NewEncoder(w).Encode(response); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -47,7 +60,7 @@ func (a *AppServer) registerUserHandler() httprouter.Handle {
 	}
 }
 
-func (a *AppServer) loginUserHandler() httprouter.Handle {
+func (a *AppServer) LoginUserHandler() httprouter.Handle {
 	type request struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -61,10 +74,11 @@ func (a *AppServer) loginUserHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		var request request
 		err := json.NewDecoder(r.Body).Decode(&request)
-		if err != nil {
+		if err != nil || request.Email == "" || request.Password == "" {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+
 		err, user := a.UserService.Login(request.Email, request.Password)
 		if err != nil {
 			fmt.Println(err)
@@ -72,7 +86,7 @@ func (a *AppServer) loginUserHandler() httprouter.Handle {
 			return
 		}
 
-		cookie := createCookie(user.SessionID)
+		cookie := createCookie(user.SessionID, user.SessionExpires)
 		response := response{user.Name, user.Surname, user.Email}
 		http.SetCookie(w, &cookie)
 		if err = json.NewEncoder(w).Encode(response); err != nil {
@@ -81,26 +95,27 @@ func (a *AppServer) loginUserHandler() httprouter.Handle {
 	}
 }
 
-func (a *AppServer) logoutUserHandler() httprouter.Handle {
+func (a *AppServer) LogoutUserHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		sessionID, err := r.Cookie("sessionID")
-		if err != nil {
+		if err != nil || sessionID.Value == "" {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
+
 		err = a.UserService.Logout(sessionID.Value)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		cookie := createCookie("")
+		cookie := createCookie("", time.Time{})
 		http.SetCookie(w, &cookie)
 		w.WriteHeader(http.StatusOK)
 	}
 }
 
-func (a *AppServer) getUserHandler() httprouter.Handle {
+func (a *AppServer) GetUserHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		id := p.ByName("id")
 		err, user := a.UserService.GetUser(id)
@@ -114,7 +129,35 @@ func (a *AppServer) getUserHandler() httprouter.Handle {
 	}
 }
 
-func createCookie(value string) http.Cookie {
-	expire := time.Now().Add(24 * time.Hour)
-	return http.Cookie{Name: "sessionID", Value: value, Path: "/", Expires: expire, MaxAge: 86400}
+func (a *AppServer) GetMeHandler() httprouter.Handle {
+	type response struct {
+		ID      string `json:"id"`
+		Name    string `json:"name"`
+		Surname string `json:"surname"`
+		Email   string `json:"email"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		id := r.Header.Get("userID")
+		err, user := a.UserService.GetUser(id)
+		if err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		response := response{
+			ID:      user.ID.Hex(),
+			Name:    user.Name,
+			Surname: user.Surname,
+			Email:   user.Email,
+		}
+
+		if err = json.NewEncoder(w).Encode(response); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}
+}
+
+func createCookie(value string, expires time.Time) http.Cookie {
+	return http.Cookie{Name: "sessionID", Value: value, Path: "/", Expires: expires, MaxAge: 86400}
 }

@@ -38,14 +38,14 @@ func TestChain(t *testing.T) {
 
 func TestAppServer_NewAuthMiddleware(t *testing.T) {
 	var as = &mock.UserAuthenticationProvider{
-		CheckAuthenticationFn: func(sessionID string) (err error, ok bool) {
+		CheckAuthenticationFn: func(sessionID string) (err error, id string) {
 			if sessionID == "" {
-				return errors.New("empty sessionID"), false
+				return errors.New("empty sessionID"), ""
 			}
 			if sessionID == "invalid" {
-				return errors.New("not found"), false
+				return errors.New("not found"), ""
 			}
-			return nil, true
+			return nil, "1"
 		},
 	}
 
