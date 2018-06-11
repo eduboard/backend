@@ -1,9 +1,23 @@
 version: '2'
+
 services:
+  traefik:
+    image: traefik:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/opt/traefik/traefik.toml:/etc/traefik/traefik.toml"
+      - "/opt/traefik/acme:/etc/traefik/acme"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
   mongo:
     image: mongo:3.6
     ports:
       - "127.0.0.1:27017:27017"
+    volumes:
+      - "/opt/mongo:/data/db"
+
   server:
     image: eduboard/backend:latest
     ports:
@@ -16,3 +30,8 @@ services:
       - mongo:mongo
     volumes:
       - ./static:/var/www/static
+    labels:
+      traefik.enable: "true"
+      traefik.port: "8080"
+      traefik.frontend.rule: "Host: eduboard.io"
+

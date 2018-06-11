@@ -38,8 +38,8 @@ func (u *UserRepository) Find(id string) (error, *eduboard.User) {
 	return nil, &result
 }
 
-func (u *UserRepository) FindBySessionID(accessToken string) (error, *eduboard.User) {
-	return u.findBy("sessionID", accessToken)
+func (u *UserRepository) FindBySessionID(sessionID string) (error, *eduboard.User) {
+	return u.findBy("sessionID", sessionID)
 }
 
 func (u *UserRepository) FindByEmail(email string) (error, *eduboard.User) {

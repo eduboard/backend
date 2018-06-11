@@ -8,7 +8,7 @@ type User struct {
 	Surname      string        `json:"surname" bson:"surname"`
 	Email        string        `json:"email" bson:"email"`
 	PasswordHash string        `json:"password" bson:"password"`
-	SessionID    string        `json:"sessionId" bson:"sessionId"`
+	SessionID    string        `json:"sessionID" bson:"sessionID"`
 	Courses      []string      `json:"courses" bson:"courses"`
 }
 
