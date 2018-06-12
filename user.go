@@ -1,15 +1,20 @@
 package eduboard
 
-import "gopkg.in/mgo.v2/bson"
+import (
+	"time"
+	"gopkg.in/mgo.v2/bson"
+)
 
 type User struct {
-	ID           bson.ObjectId `json:"id" bson:"_id,omitempty"`
-	Name         string        `json:"name" bson:"name"`
-	Surname      string        `json:"surname" bson:"surname"`
-	Email        string        `json:"email" bson:"email"`
-	PasswordHash string        `json:"password" bson:"password"`
-	SessionID    string        `json:"sessionID" bson:"sessionID"`
-	Courses      []string      `json:"courses" bson:"courses"`
+	ID             bson.ObjectId `json:"id" bson:"_id"`
+	Name           string        `json:"name" bson:"name"`
+	Surname        string        `json:"surname" bson:"surname"`
+	Email          string        `json:"email" bson:"email"`
+	PasswordHash   string        `json:"password" bson:"password"`
+	SessionID      string        `json:"sessionID" bson:"sessionID"`
+	SessionExpires time.Time     `json:"sessionExpires" bson:"sessionExpires"`
+	Courses        []string      `json:"courses" bson:"courses"`
+	CreatedAt      time.Time     `json:"createdAt" bson:"createdAt"`
 }
 
 type UserRepository interface {
@@ -29,5 +34,5 @@ type UserService interface {
 type UserAuthenticationProvider interface {
 	Login(email string, password string) (error, *User)
 	Logout(sessionID string) error
-	CheckAuthentication(sessionID string) (err error, ok bool)
+	CheckAuthentication(sessionID string) (err error, userID string)
 }

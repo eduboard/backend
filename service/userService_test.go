@@ -211,15 +211,15 @@ func TestUserService_CheckAuthentication(t *testing.T) {
 		t.Run(v.name, func(t *testing.T) {
 			defer func() { r.FindBySessionIDFnInvoked = false }()
 
-			err, ok := us.CheckAuthentication(v.sessionID)
+			err, id := us.CheckAuthentication(v.sessionID)
 			if v.error {
 				assert.NotNil(t, err, "did not fail")
-				assert.False(t, ok, "should not be ok")
+				assert.Equal(t, "", id, "should not contain id")
 				assert.True(t, r.FindBySessionIDFnInvoked, "UpdateSessionIDFn was invoked")
 				return
 			}
 			assert.Nil(t, err, "caused error logging out user")
-			assert.True(t, ok, "should be ok")
+			assert.Equal(t, "31", id, "should contain id") // 31 is the Hex representation of 1.
 			assert.True(t, r.FindBySessionIDFnInvoked, "FindBySessionID was not invoked")
 		})
 	}

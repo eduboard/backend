@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/eduboard/backend"
 	"github.com/eduboard/backend/auth"
+	"time"
 )
 
 type UserService struct {
@@ -38,8 +39,10 @@ func (uS *UserService) CreateUser(user *eduboard.User, password string) (error, 
 	if err != nil {
 		return err, &eduboard.User{}
 	}
+
 	user.PasswordHash = hashedPassword
 	user.SessionID = uS.a.SessionID()
+	user.SessionExpires = time.Time{}.Add(24 * time.Hour)
 
 	err = uS.r.Store(user)
 	if err != nil {
@@ -87,10 +90,14 @@ func (uS *UserService) Logout(sessionID string) error {
 	return nil
 }
 
-func (uS *UserService) CheckAuthentication(sessionID string) (err error, ok bool) {
-	err, _ = uS.r.FindBySessionID(sessionID)
+func (uS *UserService) CheckAuthentication(sessionID string) (err error, id string) {
+	err, user := uS.r.FindBySessionID(sessionID)
 	if err != nil {
-		return err, false
+		return err, ""
 	}
-	return nil, true
+	if user.SessionExpires.After(time.Now()) {
+		return errors.New("session expired"), ""
+	}
+
+	return nil, user.ID.Hex()
 }

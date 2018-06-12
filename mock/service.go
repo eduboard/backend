@@ -57,7 +57,7 @@ type UserAuthenticationProvider struct {
 	LogoutFn        func(sessionID string) error
 	LogoutFnInvoked bool
 
-	CheckAuthenticationFn        func(sessionID string) (err error, ok bool)
+	CheckAuthenticationFn        func(sessionID string) (err error, userID string)
 	CheckAuthenticationFnInvoked bool
 }
 
@@ -73,7 +73,7 @@ func (uAM *UserAuthenticationProvider) Logout(sessionID string) error {
 	uAM.LogoutFnInvoked = true
 	return uAM.LogoutFn(sessionID)
 }
-func (uAM *UserAuthenticationProvider) CheckAuthentication(sessionID string) (err error, ok bool) {
+func (uAM *UserAuthenticationProvider) CheckAuthentication(sessionID string) (err error, userID string) {
 	uAM.CheckAuthenticationFnInvoked = true
 	return uAM.CheckAuthenticationFn(sessionID)
 }
