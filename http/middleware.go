@@ -25,12 +25,12 @@ func NewAuthMiddleware(provider eduboard.UserAuthenticationProvider) func(handle
 			}
 
 			sessionID := cookie.Value
-			err, ok := provider.CheckAuthentication(sessionID)
-			if err != nil || !ok {
+			err, userID := provider.CheckAuthentication(sessionID)
+			if err != nil {
 				w.WriteHeader(http.StatusForbidden)
 				return
 			}
-
+			r.Header.Set("userID", userID)
 			next.ServeHTTP(w, r)
 		})
 	}
