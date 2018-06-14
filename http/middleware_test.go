@@ -103,6 +103,7 @@ func TestCORS(t *testing.T) {
 		"Access-Control-Allow-Origin":  "http://localhost:8080",
 		"Access-Control-Allow-Methods": "POST, GET, OPTIONS, PUT, DELETE",
 		"Access-Control-Allow-Headers": "Accept, Content-Type, Content-Length, Accept-Encoding",
+		"Access-Control-Allow-Credentials": "include",
 	}
 
 	for _, v := range testCases {
