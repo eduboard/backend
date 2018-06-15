@@ -18,6 +18,15 @@ The traefik reverse proxy is used for https support. Some changes need to be mad
 - change domain to your domain
 - move the file to /opt/traefik/traefik.toml
 
+### Watchtower (optional)
+The watchtower makes sure that you that you always have the newest eduboard version running.
+You can start it over the command line (your container name might be different from `eduboard_server_1`)
+
+- `docker run -d \
+  --name watchtower \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  v2tec/watchtower eduboard_server_1`
+
 ## Endpoints
 
 - `/` reservered for frontend static files

@@ -34,4 +34,3 @@ services:
       traefik.enable: "true"
       traefik.port: "8080"
       traefik.frontend.rule: "Host: eduboard.io"
-
