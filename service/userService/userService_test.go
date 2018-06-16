@@ -1,4 +1,4 @@
-package service
+package userService
 
 import (
 	"errors"
@@ -59,9 +59,9 @@ var a = mock.AuthenticatorMock{
 
 var us = &UserService{&r, &a}
 
-func TestNewUserService(t *testing.T) {
+func TestNew(t *testing.T) {
 	t.Parallel()
-	u := NewUserService(&r)
+	u := New(&r)
 	assert.Equal(t, &r, u.r, "repository does not match")
 	assert.NotNil(t, u.a, "no authenticator")
 }
@@ -158,7 +158,7 @@ func TestUserService_Login(t *testing.T) {
 				assert.False(t, r.UpdateSessionIDFnInvoked, "UpdateSessionID invoked")
 				return
 			}
-			assert.Nil(t, err, "should not fail to login user")
+			assert.Nil(t, err, "should not fail to login userService")
 			assert.True(t, r.FindByEmailFnInvoked, "FindByEmail not invoked")
 			assert.True(t, a.CompareHashFnInvoked, "CompareHash not invoked")
 			assert.True(t, a.SessionIDFnInvoked, "SessionID not invoked")

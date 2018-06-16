@@ -1,4 +1,4 @@
-package service
+package userService
 
 import (
 	"github.com/eduboard/backend"
@@ -18,7 +18,7 @@ type Authenticator interface {
 	SessionID() string
 }
 
-func NewUserService(repository eduboard.UserRepository) *UserService {
+func New(repository eduboard.UserRepository) *UserService {
 	return &UserService{
 		r: repository,
 		a: &auth.Authenticator{},

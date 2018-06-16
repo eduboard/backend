@@ -4,29 +4,36 @@ import (
 	"github.com/eduboard/backend"
 )
 
-// CourseService implements the eduboard.UserService interface to mock functions and record successful invocations.
 type CourseService struct {
-	CourseFn        func(id string) (err error, course *eduboard.Course)
+	CourseFn        func(id string, cef eduboard.CourseEntryManyFinder) (err error, course eduboard.Course)
 	CourseFnInvoked bool
 
-	CoursesFn          func() (err error, courses []*eduboard.Course)
-	CoursesFuncInvoked bool
+	CoursesFn        func() (err error, courses []eduboard.Course)
+	CoursesFnInvoked bool
 }
 
-// Statically check that CourseService actually implements eduboard.CourseService interface
 var _ eduboard.CourseService = (*CourseService)(nil)
 
-func (cSM *CourseService) GetCourse(id string) (err error, course *eduboard.Course) {
+func (cSM *CourseService) GetCourse(id string, cef eduboard.CourseEntryManyFinder) (err error, course eduboard.Course) {
 	cSM.CourseFnInvoked = true
-	return cSM.CourseFn(id)
+	return cSM.CourseFn(id, cef)
 }
 
-func (cSM *CourseService) GetAllCourses() (err error, courses []*eduboard.Course) {
-	cSM.CoursesFuncInvoked = true
+func (cSM *CourseService) GetAllCourses() (err error, courses []eduboard.Course) {
+	cSM.CoursesFnInvoked = true
 	return cSM.CoursesFn()
 }
 
-// UserService implements the eduboard.UserService interface to mock functions and record successful invocations.
+type CourseEntryService struct {
+	StoreCorseEntryFn        func(entry *eduboard.CourseEntry, cfu eduboard.CourseFindUpdater, ces eduboard.CourseEntryInserter) (err error, courseEntry *eduboard.CourseEntry)
+	StoreCorseEntryFnInvoked bool
+}
+
+func (cSM *CourseEntryService) StoreCourseEntry(entry *eduboard.CourseEntry, cfu eduboard.CourseFindUpdater, ces eduboard.CourseEntryInserter) (err error, courseEntry *eduboard.CourseEntry) {
+	cSM.StoreCorseEntryFnInvoked = true
+	return cSM.StoreCorseEntryFn(entry, cfu, ces)
+}
+
 type UserService struct {
 	CreateUserFn        func(u *eduboard.User, password string) (error, *eduboard.User)
 	CreateUserFnInvoked bool
@@ -37,7 +44,6 @@ type UserService struct {
 	UserAuthenticationProvider
 }
 
-// Statically check that UserService actually implements eduboard.UserService interface
 var _ eduboard.UserService = (*UserService)(nil)
 
 func (uSM *UserService) CreateUser(u *eduboard.User, password string) (error, *eduboard.User) {
@@ -61,7 +67,6 @@ type UserAuthenticationProvider struct {
 	CheckAuthenticationFnInvoked bool
 }
 
-// Statically check that UserAuthenticationProvider actually implements eduboard.UserAuthenticationProvider interface
 var _ eduboard.UserAuthenticationProvider = (*UserAuthenticationProvider)(nil)
 
 func (uAM *UserAuthenticationProvider) Login(email string, password string) (error, *eduboard.User) {

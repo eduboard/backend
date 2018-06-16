@@ -5,14 +5,15 @@ import (
 	"github.com/eduboard/backend/config"
 	"github.com/eduboard/backend/http"
 	"github.com/eduboard/backend/mongodb"
-	"github.com/eduboard/backend/service"
+	"github.com/eduboard/backend/service/courseEntryService"
+	"github.com/eduboard/backend/service/courseService"
+	"github.com/eduboard/backend/service/userService"
 	"io"
 	"log"
 	"os"
 )
 
 func main() {
-
 	c := config.GetConfig()
 	mongoConfig := mongodb.DBConfig{
 		URL:      fmt.Sprintf("%s:%s", c.MongoHost, c.MongoPort),
@@ -20,6 +21,8 @@ func main() {
 		Username: c.MongoUser,
 		Password: c.MongoPass,
 	}
+
+	repository := mongodb.Initialize(mongoConfig)
 
 	var logDst io.Writer
 	if c.LogFile == "" {
@@ -33,17 +36,15 @@ func main() {
 		logDst = file
 	}
 
-	repository := mongodb.Initialize(mongoConfig)
-
-	uS := service.NewUserService(repository.UserRepository)
-	cS := service.NewCourseService(repository.CourseRepository)
-
 	server := http.AppServer{
-		Host:          c.Host,
-		Static:        c.StaticDir,
-		Logger:        log.New(logDst, "", log.LstdFlags),
-		UserService:   uS,
-		CourseService: cS,
+		Host:                  c.Host,
+		Static:                c.StaticDir,
+		Logger:                log.New(logDst, "", log.LstdFlags),
+		UserService:           userService.New(repository.UserRepository),
+		CourseService:         courseService.New(repository.CourseRepository),
+		CourseEntryServive:    courseEntryService.New(repository.CourseEntryRepository),
+		CourseRepository:      repository.CourseRepository,
+		CourseEntryRepository: repository.CourseEntryRepository,
 	}
 
 	server.Logger.Printf("Server listening on %s", c.Host)
