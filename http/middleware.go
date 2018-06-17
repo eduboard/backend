@@ -39,7 +39,7 @@ func NewAuthMiddleware(provider eduboard.UserAuthenticationProvider) func(handle
 func Logger(l *log.Logger) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			l.Printf("%s: %s %s\n", r.RemoteAddr, r.Method, r.URL.Path)
+			l.Printf("%s: %s %s", r.RemoteAddr, r.Method, r.URL.Path)
 			next.ServeHTTP(w, r)
 		})
 	}
