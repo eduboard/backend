@@ -44,8 +44,18 @@ func (c *CourseEntryRepository) FindMany(query bson.M) (error, []eduboard.Course
 	return nil, result
 }
 
-func (c *CourseEntryRepository) Update(id string, update bson.M) (error, eduboard.CourseEntry) {
-	return nil, eduboard.CourseEntry{}
+func (c *CourseEntryRepository) Update(id string, update bson.M) error {
+	if !bson.IsObjectIdHex(id) {
+		return errors.New("invalid id")
+	}
+
+	entryID := bson.ObjectIdHex(id)
+
+	if err := c.c.UpdateId(entryID, update); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *CourseEntryRepository) Delete(id string) error {

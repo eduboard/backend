@@ -109,7 +109,7 @@ type CourseEntryRepository struct {
 	FindManyFn        func(query bson.M) (error, []eduboard.CourseEntry)
 	FindManyFnInvoked bool
 
-	UpdateFn        func(id string, update bson.M) (error, eduboard.CourseEntry)
+	UpdateFn        func(id string, update bson.M) error
 	UpdateFnInvoked bool
 
 	DeleteFn        func(id string) error
@@ -133,7 +133,7 @@ func (cRM *CourseEntryRepository) FindMany(query bson.M) (error, []eduboard.Cour
 	return cRM.FindManyFn(query)
 }
 
-func (cRM *CourseEntryRepository) Update(id string, update bson.M) (error, eduboard.CourseEntry) {
+func (cRM *CourseEntryRepository) Update(id string, update bson.M) error {
 	cRM.UpdateFnInvoked = true
 	return cRM.UpdateFn(id, update)
 }

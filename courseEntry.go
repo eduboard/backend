@@ -37,7 +37,7 @@ type CourseEntryManyFinder interface {
 }
 
 type CourseEntryUpdater interface {
-	Update(id string, update bson.M) (error, CourseEntry)
+	Update(id string, update bson.M) error
 }
 
 type CourseEntryDeleter interface {
@@ -47,5 +47,5 @@ type CourseEntryDeleter interface {
 type CourseEntryServive interface {
 	StoreCourseEntry(entry *CourseEntry, cfu CourseFindUpdater) (err error, courseEntry *CourseEntry)
 	UpdateCourseEntry(*CourseEntry) (*CourseEntry, error)
-	DeleteCourseEntry(entryID string, courseID string, updater CourseFindUpdater) error
+	DeleteCourseEntry(entryID string, courseID string, updater CourseUpdater) error
 }
