@@ -2,3 +2,9 @@ comment:
   layout: "files"
   behavior: default
   requires_change: false
+coverage:
+  status:
+    patch:
+      default:
+        enabled: no
+        if_not_found: success

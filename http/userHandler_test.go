@@ -11,6 +11,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"log"
+	"os"
 )
 
 func TestAppServer_RegisterUserHandler(t *testing.T) {
@@ -23,7 +25,7 @@ func TestAppServer_RegisterUserHandler(t *testing.T) {
 		u.ID = bson.ObjectIdHex("5b1d24e72c5b292fe0d6ee55")
 		return nil, u
 	}
-	appServer := AppServer{UserService: &mockService}
+	appServer := AppServer{UserService: &mockService, Logger: log.New(os.Stdout, "", 0)}
 
 	var testCases = []struct {
 		name   string
@@ -72,7 +74,7 @@ func TestAppServer_LoginUserHandler(t *testing.T) {
 		user := &eduboard.User{ID: bson.ObjectIdHex("5b1d24e72c5b292fe0d6ee55")}
 		return nil, user
 	}
-	appServer := AppServer{UserService: &mockService}
+	appServer := AppServer{UserService: &mockService, Logger: log.New(os.Stdout, "", 0)}
 
 	var testCases = []struct {
 		name   string
@@ -119,7 +121,7 @@ func TestAppServer_LogoutUserHandler(t *testing.T) {
 		}
 		return nil
 	}
-	appServer := AppServer{UserService: &mockService}
+	appServer := AppServer{UserService: &mockService, Logger: log.New(os.Stdout, "", 0)}
 
 	var testCases = []struct {
 		name      string
@@ -165,7 +167,7 @@ func TestAppServer_GetUserHandler(t *testing.T) {
 		}
 		return nil, &eduboard.User{Name: "name"}
 	}
-	appServer := AppServer{UserService: &mockService}
+	appServer := AppServer{UserService: &mockService, Logger: log.New(os.Stdout, "", 0)}
 
 	var testCases = []struct {
 		name   string
@@ -208,7 +210,7 @@ func TestAppServer_GetMeHandler(t *testing.T) {
 		}
 		return nil, &eduboard.User{Name: "name"}
 	}
-	appServer := AppServer{UserService: &mockService}
+	appServer := AppServer{UserService: &mockService, Logger: log.New(os.Stdout, "", 0)}
 
 	var testCases = []struct {
 		name   string

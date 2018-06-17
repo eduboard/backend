@@ -41,6 +41,7 @@ func (a *AppServer) RegisterUserHandler() httprouter.Handle {
 
 		err, user := a.UserService.CreateUser(&userModel, request.Password)
 		if err != nil {
+			a.Logger.Printf("error creating user: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -82,6 +83,7 @@ func (a *AppServer) LoginUserHandler() httprouter.Handle {
 		err, user := a.UserService.Login(request.Email, request.Password)
 		if err != nil {
 			fmt.Println(err)
+			a.Logger.Printf("error logging in: %v", err)
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
@@ -105,6 +107,7 @@ func (a *AppServer) LogoutUserHandler() httprouter.Handle {
 
 		err = a.UserService.Logout(sessionID.Value)
 		if err != nil {
+			a.Logger.Printf("error logging out user %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -124,6 +127,7 @@ func (a *AppServer) GetUserHandler() httprouter.Handle {
 		}
 		err, user := a.UserService.GetUser(id)
 		if err != nil {
+			a.Logger.Printf("error getting user %v", err)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
@@ -150,6 +154,7 @@ func (a *AppServer) GetMeHandler() httprouter.Handle {
 
 		err, user := a.UserService.GetUser(id)
 		if err != nil {
+			a.Logger.Printf("error getting user %v", err)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
