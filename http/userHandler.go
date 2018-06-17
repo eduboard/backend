@@ -2,7 +2,6 @@ package http
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/eduboard/backend"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
@@ -82,7 +81,6 @@ func (a *AppServer) LoginUserHandler() httprouter.Handle {
 
 		err, user := a.UserService.Login(request.Email, request.Password)
 		if err != nil {
-			fmt.Println(err)
 			a.Logger.Printf("error logging in: %v", err)
 			w.WriteHeader(http.StatusUnauthorized)
 			return
