@@ -1,9 +1,9 @@
 package service
 
 import (
-	"errors"
 	"github.com/eduboard/backend"
 	"github.com/eduboard/backend/auth"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -37,7 +37,7 @@ func (uS *UserService) CreateUser(user *eduboard.User, password string) (error, 
 
 	hashedPassword, err := uS.a.Hash(password)
 	if err != nil {
-		return err, &eduboard.User{}
+		return errors.Wrap(err, "error hashing password"), &eduboard.User{}
 	}
 
 	user.PasswordHash = hashedPassword
@@ -46,7 +46,7 @@ func (uS *UserService) CreateUser(user *eduboard.User, password string) (error, 
 
 	err = uS.r.Store(user)
 	if err != nil {
-		return err, &eduboard.User{}
+		return errors.Wrap(err, "error storing user"), &eduboard.User{}
 	}
 	return nil, user
 }
@@ -58,12 +58,12 @@ func (uS *UserService) GetUser(id string) (err error, user *eduboard.User) {
 func (uS *UserService) Login(email string, password string) (error, *eduboard.User) {
 	err, user := uS.r.FindByEmail(email)
 	if err != nil {
-		return err, &eduboard.User{}
+		return errors.Wrap(err, "error finding user by email"), &eduboard.User{}
 	}
 
 	ok, err := uS.a.CompareHash(user.PasswordHash, password)
 	if err != nil {
-		return err, &eduboard.User{}
+		return errors.Wrap(err, "error comparing hash"), &eduboard.User{}
 	}
 	if !ok {
 		return errors.New("invalid password"), &eduboard.User{}
@@ -72,7 +72,7 @@ func (uS *UserService) Login(email string, password string) (error, *eduboard.Us
 	user.SessionID = uS.a.SessionID()
 	err, user = uS.r.UpdateSessionID(user)
 	if err != nil {
-		return err, &eduboard.User{}
+		return errors.Wrap(err, "error updating sessionID"), &eduboard.User{}
 	}
 
 	return nil, user
@@ -81,7 +81,7 @@ func (uS *UserService) Login(email string, password string) (error, *eduboard.Us
 func (uS *UserService) Logout(sessionID string) error {
 	err, user := uS.r.FindBySessionID(sessionID)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "error finding by sessionID")
 	}
 
 	user.SessionID = ""
@@ -93,7 +93,7 @@ func (uS *UserService) Logout(sessionID string) error {
 func (uS *UserService) CheckAuthentication(sessionID string) (err error, id string) {
 	err, user := uS.r.FindBySessionID(sessionID)
 	if err != nil {
-		return err, ""
+		return errors.Wrap(err, "error finding by sessionID"), ""
 	}
 	if user.SessionExpires.After(time.Now()) {
 		return errors.New("session expired"), ""

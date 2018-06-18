@@ -16,6 +16,7 @@ func (a *AppServer) getAllCoursesHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		err, courses := a.CourseService.GetAllCourses()
 		if err != nil {
+			a.Logger.Printf("error getting courses: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -36,6 +37,7 @@ func (a *AppServer) getCourseHandler() httprouter.Handle {
 		id := p[0].Value
 		err, course := a.CourseService.GetCourse(id)
 		if err != nil {
+			a.Logger.Printf("error getting course: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

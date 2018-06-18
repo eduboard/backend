@@ -10,6 +10,7 @@ import (
 type AppServer struct {
 	Host          string
 	Static        string
+	Logger        *log.Logger
 	UserService   eduboard.UserService
 	CourseService eduboard.CourseService
 	httpServer    *http.Server
@@ -19,9 +20,9 @@ func (a *AppServer) initialize() {
 	protected := a.authenticatedRoutes()
 	public := a.publicRoutes()
 
-	privateChain := Chain(protected, Logger, CORS, NewAuthMiddleware(a.UserService))
-	publicChain := Chain(public, Logger, CORS)
-	staticChain := Chain(http.FileServer(http.Dir(a.Static)), Logger, CORS)
+	privateChain := Chain(protected, Logger(a.Logger), CORS, NewAuthMiddleware(a.UserService))
+	publicChain := Chain(public, Logger(a.Logger), CORS)
+	staticChain := Chain(http.FileServer(http.Dir(a.Static)), Logger(a.Logger), CORS)
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/v1/", privateChain)

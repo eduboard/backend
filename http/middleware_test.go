@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"bytes"
+	"log"
 )
 
 func TestChain(t *testing.T) {
@@ -129,6 +131,39 @@ func TestCORS(t *testing.T) {
 			}
 			assert.Equal(t, http.StatusOK, res.StatusCode, "http status not 200")
 			assert.Equal(t, v.enter, handlerEntered, "next handler was not called as expected")
+		})
+	}
+}
+
+func TestLogger(t *testing.T) {
+	var testCases = []struct {
+		name   string
+		method string
+		path   string
+	}{
+		{"login", "POST", "/api/login"},
+		{"getCourses", "GET", "/api/v1/courses"},
+		{"CORS", "OPTIONS", "/"},
+	}
+
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			handlerEntered := false
+
+			var testHandler http.HandlerFunc = func(writer http.ResponseWriter, request *http.Request) {
+				handlerEntered = true
+			}
+
+			b := &bytes.Buffer{}
+			l := log.New(b, "", 0)
+			handler := Logger(l)
+			req := httptest.NewRequest(v.method, v.path, nil)
+			rr := httptest.NewRecorder()
+
+			handler(testHandler).ServeHTTP(rr, req)
+			assert.True(t, handlerEntered, "inner handler was not entered")
+			assert.Contains(t, b.String(), v.path, "log does not contain path")
+			assert.Contains(t, b.String(), v.method, "log does not contain method")
 		})
 	}
 }

@@ -9,7 +9,8 @@ type config struct {
 	MongoDB,
 	MongoUser,
 	MongoPass,
-	StaticDir string
+	StaticDir,
+	LogFile string
 }
 
 func GetConfig() config {
@@ -48,6 +49,11 @@ func GetConfig() config {
 		staticDir = "./static"
 	}
 
+	logFile, ok := os.LookupEnv("LOGFILE")
+	if !ok {
+		logFile = ""
+	}
+
 	return config{
 		Host:      host,
 		MongoHost: mongoHost,
@@ -56,5 +62,6 @@ func GetConfig() config {
 		MongoUser: mongoUser,
 		MongoPass: mongPass,
 		StaticDir: staticDir,
+		LogFile:   logFile,
 	}
 }

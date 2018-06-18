@@ -18,6 +18,7 @@ func TestGetConfig(t *testing.T) {
 		{"MONGO_USER", "testuser"},
 		{"MONGO_PASS", "testpass"},
 		{"STATIC_DIR", "testdir"},
+		{"LOGFILE", "backend.log"},
 	}
 
 	var testCases = []struct {
@@ -33,7 +34,8 @@ func TestGetConfig(t *testing.T) {
 				"testdb",
 				"testuser",
 				"testpass",
-				"testdir"}},
+				"testdir",
+				"backend.log"}},
 		{"unset", true,
 			config{
 				":8080",
@@ -42,7 +44,8 @@ func TestGetConfig(t *testing.T) {
 				"eduboard",
 				"",
 				"",
-				"./static"}},
+				"./static",
+				""}},
 	}
 
 	for _, v := range testCases {
