@@ -18,29 +18,41 @@ func newCourseRepository(database *mgo.Database) *CourseRepository {
 	}
 }
 
-func (c *CourseRepository) Store(course *eduboard.Course) error {
+func (c *CourseRepository) Insert(course *eduboard.Course) error {
 	return nil
 }
 
-func (c *CourseRepository) Find(id string) (error, *eduboard.Course) {
+func (c *CourseRepository) FindOneByID(id string) (error, eduboard.Course) {
 	result := eduboard.Course{}
 
 	if !bson.IsObjectIdHex(id) {
-		return errors.New("invalid id"), &eduboard.Course{}
+		return errors.New("invalid id"), eduboard.Course{}
 	}
 
 	if err := c.c.FindId(bson.ObjectIdHex(id)).One(&result); err != nil {
-		return err, &eduboard.Course{}
+		return err, eduboard.Course{}
 	}
-	return nil, &result
+	return nil, result
 }
 
-func (c *CourseRepository) FindAll() (error, []*eduboard.Course) {
-	result := []*eduboard.Course{}
+func (c *CourseRepository) FindMany(query bson.M) (error, []eduboard.Course) {
+	result := []eduboard.Course{}
 
 	if err := c.c.Find(bson.M{}).All(&result); err != nil {
-		return err, []*eduboard.Course{}
+		return err, []eduboard.Course{}
 	}
 
 	return nil, result
+}
+
+func (c *CourseRepository) Update(id string, update bson.M) (error, eduboard.Course) {
+	if !bson.IsObjectIdHex(id) {
+		return errors.New("invalid id"), eduboard.Course{}
+	}
+
+	if err := c.c.Update(bson.M{"_id": bson.ObjectIdHex(id)}, update); err != nil {
+		return err, eduboard.Course{}
+	}
+
+	return nil, eduboard.Course{}
 }

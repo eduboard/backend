@@ -8,12 +8,15 @@ import (
 )
 
 type AppServer struct {
-	Host          string
-	Static        string
-	Logger        *log.Logger
-	UserService   eduboard.UserService
-	CourseService eduboard.CourseService
-	httpServer    *http.Server
+	Host                  string
+	Static                string
+	Logger                *log.Logger
+	UserService           eduboard.UserService
+	CourseService         eduboard.CourseService
+	CourseEntryService    eduboard.CourseEntryService
+	CourseRepository      eduboard.CourseRepository
+	CourseEntryRepository eduboard.CourseEntryRepository
+	httpServer            *http.Server
 }
 
 func (a *AppServer) initialize() {
@@ -40,5 +43,5 @@ func (a *AppServer) initialize() {
 
 func (a *AppServer) Run() {
 	a.initialize()
-	log.Fatal(a.httpServer.ListenAndServe())
+	a.Logger.Fatal(a.httpServer.ListenAndServe())
 }

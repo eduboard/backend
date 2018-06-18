@@ -13,9 +13,10 @@ type DBConfig struct {
 }
 
 type Repository struct {
-	session          *mgo.Session
-	UserRepository   *UserRepository
-	CourseRepository *CourseRepository
+	session               *mgo.Session
+	UserRepository        *UserRepository
+	CourseRepository      *CourseRepository
+	CourseEntryRepository *CourseEntryRepository
 }
 
 func Initialize(c DBConfig) *Repository {
@@ -33,8 +34,9 @@ func Initialize(c DBConfig) *Repository {
 
 	db := session.DB(config.Database)
 	return &Repository{
-		session:          session,
-		UserRepository:   newUserRepository(db),
-		CourseRepository: newCourseRepository(db),
+		session:               session,
+		UserRepository:        newUserRepository(db),
+		CourseRepository:      newCourseRepository(db),
+		CourseEntryRepository: newCourseEntryRepository(db),
 	}
 }
