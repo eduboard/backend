@@ -39,10 +39,16 @@ func (u *UserRepository) Find(id string) (error, *eduboard.User) {
 }
 
 func (u *UserRepository) FindBySessionID(sessionID string) (error, *eduboard.User) {
+	if sessionID == "" {
+		return errors.New("not found"), &eduboard.User{}
+	}
 	return u.findBy("sessionID", sessionID)
 }
 
 func (u *UserRepository) FindByEmail(email string) (error, *eduboard.User) {
+	if email == "" {
+		return errors.New("not found"), &eduboard.User{}
+	}
 	return u.findBy("email", email)
 }
 
