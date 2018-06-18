@@ -25,13 +25,29 @@ func (cSM *CourseService) GetAllCourses() (err error, courses []eduboard.Course)
 }
 
 type CourseEntryService struct {
-	StoreCorseEntryFn        func(entry *eduboard.CourseEntry, cfu eduboard.CourseFindUpdater, ces eduboard.CourseEntryInserter) (err error, courseEntry *eduboard.CourseEntry)
-	StoreCorseEntryFnInvoked bool
+	StoreCourseEntryFn        func(entry *eduboard.CourseEntry, cfu eduboard.CourseFindUpdater) (err error, courseEntry *eduboard.CourseEntry)
+	StoreCourseEntryFnInvoked bool
+
+	UpdateCourseEntryFn        func(*eduboard.CourseEntry) (*eduboard.CourseEntry, error)
+	UpdateCourseEntryFnInvoked bool
+
+	DeleteCourseEntryFn        func(entryID string, courseID string, updater eduboard.CourseUpdater) error
+	DeleteCourseEntryFnInvoked bool
 }
 
-func (cSM *CourseEntryService) StoreCourseEntry(entry *eduboard.CourseEntry, cfu eduboard.CourseFindUpdater, ces eduboard.CourseEntryInserter) (err error, courseEntry *eduboard.CourseEntry) {
-	cSM.StoreCorseEntryFnInvoked = true
-	return cSM.StoreCorseEntryFn(entry, cfu, ces)
+func (cSM *CourseEntryService) StoreCourseEntry(entry *eduboard.CourseEntry, cfu eduboard.CourseFindUpdater) (err error, courseEntry *eduboard.CourseEntry) {
+	cSM.StoreCourseEntryFnInvoked = true
+	return cSM.StoreCourseEntryFn(entry, cfu)
+}
+
+func (cSM *CourseEntryService) UpdateCourseEntry(e *eduboard.CourseEntry) (*eduboard.CourseEntry, error) {
+	cSM.UpdateCourseEntryFnInvoked = true
+	return cSM.UpdateCourseEntryFn(e)
+}
+
+func (cSM *CourseEntryService) DeleteCourseEntry(entryID string, courseID string, updater eduboard.CourseUpdater) error {
+	cSM.DeleteCourseEntryFnInvoked = true
+	return cSM.DeleteCourseEntryFn(entryID, courseID, updater)
 }
 
 type UserService struct {

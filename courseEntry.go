@@ -44,7 +44,7 @@ type CourseEntryDeleter interface {
 	Delete(id string) error
 }
 
-type CourseEntryServive interface {
+type CourseEntryService interface {
 	StoreCourseEntry(entry *CourseEntry, cfu CourseFindUpdater) (err error, courseEntry *CourseEntry)
 	UpdateCourseEntry(*CourseEntry) (*CourseEntry, error)
 	DeleteCourseEntry(entryID string, courseID string, updater CourseUpdater) error

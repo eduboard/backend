@@ -42,7 +42,7 @@ func main() {
 		Logger:                log.New(logDst, "", log.LstdFlags),
 		UserService:           userService.New(repository.UserRepository),
 		CourseService:         courseService.New(repository.CourseRepository),
-		CourseEntryServive:    courseEntryService.New(repository.CourseEntryRepository),
+		CourseEntryService:    courseEntryService.New(repository.CourseEntryRepository),
 		CourseRepository:      repository.CourseRepository,
 		CourseEntryRepository: repository.CourseEntryRepository,
 	}

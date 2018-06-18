@@ -29,6 +29,13 @@ func (a *AppServer) PostCourseEntryHandler() httprouter.Handle {
 			entryModel eduboard.CourseEntry
 			request    request
 		)
+		id := p.ByName("courseID")
+		if ok := bson.IsObjectIdHex(id); !ok {
+			a.Logger.Printf("courseID %s is not a valid objectID", id)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
 		err := json.NewDecoder(r.Body).Decode(&request)
 		if err != nil {
 			a.Logger.Printf("error decoding request body: %v", err)
@@ -41,12 +48,6 @@ func (a *AppServer) PostCourseEntryHandler() httprouter.Handle {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		id := p.ByName("courseID")
-		if ok := bson.IsObjectIdHex(id); !ok {
-			a.Logger.Printf("courseID %s is not a valid objectID", id)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
 
 		entryModel.CourseID = bson.ObjectIdHex(id)
 		entryModel.Date = request.Date
@@ -55,9 +56,11 @@ func (a *AppServer) PostCourseEntryHandler() httprouter.Handle {
 		entryModel.Pictures = pURLs
 		entryModel.Published = request.Published
 
-		err, entry := a.CourseEntryServive.StoreCourseEntry(&entryModel, a.CourseRepository)
+		err, entry := a.CourseEntryService.StoreCourseEntry(&entryModel, a.CourseRepository)
 		if err != nil {
 			a.Logger.Printf("error storing courseEntry: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 		res := response{
@@ -89,16 +92,15 @@ func (a *AppServer) PutCourseEntryHandler() httprouter.Handle {
 		Published bool      `json:"published"`
 	}
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-
+		w.WriteHeader(http.StatusNotImplemented)
 	}
-
 }
 
 func (a *AppServer) DeleteCourseEntryHandler() httprouter.Handle {
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		courseID := p.ByName("courseID")
 		entryID := p.ByName("entryID")
-		err := a.CourseEntryServive.DeleteCourseEntry(entryID, courseID, a.CourseRepository)
+		err := a.CourseEntryService.DeleteCourseEntry(entryID, courseID, a.CourseRepository)
 		if err != nil {
 			a.Logger.Printf("error deleting courseEntry: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)

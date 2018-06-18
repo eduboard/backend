@@ -9,7 +9,7 @@ type config struct {
 	MongoDB,
 	MongoUser,
 	MongoPass,
-	StaticDir string
+	StaticDir,
 	LogFile string
 }
 

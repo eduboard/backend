@@ -13,7 +13,7 @@ type AppServer struct {
 	Logger                *log.Logger
 	UserService           eduboard.UserService
 	CourseService         eduboard.CourseService
-	CourseEntryServive    eduboard.CourseEntryServive
+	CourseEntryService    eduboard.CourseEntryService
 	CourseRepository      eduboard.CourseRepository
 	CourseEntryRepository eduboard.CourseEntryRepository
 	httpServer            *http.Server
