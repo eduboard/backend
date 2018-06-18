@@ -12,8 +12,13 @@ func (a *AppServer) authenticatedRoutes() *httprouter.Router {
 	router.GET("/api/v1/me", a.GetMeHandler())
 
 	// Courses
-	router.GET("/api/v1/courses/:id", a.getCourseHandler())
-	router.GET("/api/v1/courses", a.getAllCoursesHandler())
+	router.GET("/api/v1/courses/:id", a.GetCourseHandler())
+	router.GET("/api/v1/courses", a.GetAllCoursesHandler())
+
+	// CourseEntries
+	router.POST("/api/v1/courses/:courseID/entries", a.PostCourseEntryHandler())
+	router.PUT("/api/v1/courses/:courseID/entries/:entryID", a.PutCourseEntryHandler())
+	router.DELETE("/api/v1/courses/:courseID/entries/:entryID", a.DeleteCourseEntryHandler())
 
 	return router
 }
