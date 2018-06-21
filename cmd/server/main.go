@@ -41,6 +41,7 @@ func main() {
 		Static:                c.StaticDir,
 		Logger:                log.New(logDst, "", log.LstdFlags),
 		UserService:           userService.New(repository.UserRepository),
+		UserRepository:        repository.UserRepository,
 		CourseService:         courseService.New(repository.CourseRepository),
 		CourseEntryService:    courseEntryService.New(repository.CourseEntryRepository),
 		CourseRepository:      repository.CourseRepository,

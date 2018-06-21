@@ -53,7 +53,7 @@ func (a *AppServer) GetCourseHandler() httprouter.Handle {
 	}
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
-		id := p.ByName("id")
+		id := p.ByName("courseID")
 		err, course := a.CourseService.GetCourse(id, a.CourseEntryRepository)
 		if err != nil {
 			a.Logger.Printf("error getting course: %v", err)
@@ -82,6 +82,93 @@ func (a *AppServer) GetCourseHandler() httprouter.Handle {
 
 		if err = json.NewEncoder(w).Encode(res); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}
+}
+
+func (a *AppServer) GetMembersHandler() httprouter.Handle {
+	type response struct {
+		ID      string `json:"id"`
+		Name    string `json:"name"`
+		Surname string `json:"surname"`
+		Email   string `json:"email"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		id := p.ByName("courseID")
+		err, members := a.CourseService.GetMembers(id, a.UserRepository)
+		if err != nil {
+			a.Logger.Printf("Error getting members: %v", err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		var res = make([]response, len(members))
+		for k, v := range members {
+			res[k] = response{
+				ID:      v.ID.Hex(),
+				Name:    v.Name,
+				Surname: v.Surname,
+				Email:   v.Email,
+			}
+		}
+
+		if err = json.NewEncoder(w).Encode(res); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}
+}
+
+func (a *AppServer) AddMembersHandler() httprouter.Handle {
+	type request struct {
+		ID string `json:"id"`
+	}
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		request := []request{}
+		id := p.ByName("courseID")
+		err := json.NewDecoder(r.Body).Decode(&request)
+		if err != nil {
+			a.Logger.Printf("Error decoding body %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		members := []string{}
+		for _, req := range request {
+			members = append(members, req.ID)
+		}
+		err, _ = a.CourseService.AddMembers(id, members)
+
+		if err != nil {
+			a.Logger.Printf("Error while subscribing user to course %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+	}
+}
+
+func (a *AppServer) RemoveMembersHandler() httprouter.Handle {
+	type request struct {
+		ID string `json:"id"`
+	}
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		request := []request{}
+		id := p.ByName("courseID")
+		err := json.NewDecoder(r.Body).Decode(&request)
+		if err != nil {
+			a.Logger.Printf("Error decoding body %v", err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		members := []string{}
+		for _, req := range request {
+			members = append(members, req.ID)
+		}
+		err, _ = a.CourseService.RemoveMembers(id, members)
+		if err != nil {
+			a.Logger.Printf("Error while unsubscribing user from course %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 	}
 }

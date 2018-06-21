@@ -117,6 +117,13 @@ func (a *AppServer) LogoutUserHandler() httprouter.Handle {
 }
 
 func (a *AppServer) GetUserHandler() httprouter.Handle {
+	type response struct {
+		ID      string `json:"id"`
+		Name    string `json:"name"`
+		Surname string `json:"surname"`
+		Email   string `json:"email"`
+	}
+
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		id := p.ByName("id")
 		if id == "" {
@@ -129,7 +136,15 @@ func (a *AppServer) GetUserHandler() httprouter.Handle {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		if err = json.NewEncoder(w).Encode(user); err != nil {
+
+		response := response{
+			ID:      user.ID.Hex(),
+			Name:    user.Name,
+			Surname: user.Surname,
+			Email:   user.Email,
+		}
+
+		if err = json.NewEncoder(w).Encode(response); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}
@@ -165,6 +180,32 @@ func (a *AppServer) GetMeHandler() httprouter.Handle {
 		}
 
 		if err = json.NewEncoder(w).Encode(response); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}
+}
+
+func (a *AppServer) GetMyCoursesHandler() httprouter.Handle {
+	type response struct {
+		ID          string `json:"id"`
+		Title       string `json:"title"`
+		Description string `json:"description"`
+	}
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		id := p.ByName("id")
+		err, courses := a.UserService.GetMyCourses(id, a.CourseRepository)
+		if err != nil {
+			a.Logger.Printf("error getting courses: %v", err)
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		var res = make([]response, len(courses))
+		for k, v := range courses {
+			res[k] = response{ID: v.ID.Hex(), Title: v.Title, Description: v.Description}
+		}
+
+		if err = json.NewEncoder(w).Encode(&res); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}

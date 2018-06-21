@@ -1,15 +1,15 @@
 package http
 
 import (
+	"bytes"
 	"errors"
 	"github.com/eduboard/backend/mock"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"bytes"
-	"log"
 )
 
 func TestChain(t *testing.T) {

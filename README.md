@@ -33,13 +33,180 @@ You can start it over the command line (your container name might be different f
 
 ### Registration
 - `/api/register` Register a new user.
+
+   	```json
+   	{
+   	    "name": "Mathias",
+   	    "surname": "Hertzel (optional)",
+   	    "email": "mathias.hertzel@example.com",
+   	    "password": "supersecret"
+   	}
+   	```
+
+    ```json
+    {
+        "name": "Mathias",
+        "surname": "Hertzel", 
+        "email": "mathias.hertzel@example.com",
+        "password": "supersecret"
+    }
+    ```
 - `/api/login` Login an existing user.
+
+    ```json
+    {
+        "email": "mathias.hertzel@example.com",
+        "password": "supersecret"
+    }
+    ```
+
+    ```json
+    {
+        "name": "Mathias",
+        "surname": "Hertzel",
+        "email": "mathias.hertzel@example.com"
+    }
+    ```
 - `/api/logout` Logout current user.
 
 ### User
 - `/api/v1/me` GET own user (based on SessionToken).
+
+    ```json
+    {
+        "id": "12345",
+        "name": "Mathias",
+        "surname": "Hertzel",
+        "email": "mathias.hertzel@gmail.com"
+    }
+    ```
 - `/api/v1/users/:id` GET users.
+
+    ```json
+    {
+        "id": "12345",
+        "name": "Mathias",
+        "surname": "Hertzel",
+        "email": "mathias.hertzel@gmail.com"
+    }
+    ```
+- `/api/v1/users/:id/courses` GET all courses a member is subscribed to
+
+    ```json
+    [
+        {
+            "id:": "1",
+            "title": "Course 1",
+            "description": "a short description"
+        },
+        {
+            "id": "2",
+            "title": "Course 2",
+            "description": "another short description"
+        }
+    ]
+    ```
 
 ### Courses
 - `/api/v1/courses/` GET all accessible courses
+
+    ```json
+    [
+        {
+            "id:": "1",
+            "title": "Course 1",
+            "description": "a short description"
+        },
+        {
+            "id": "2",
+            "title": "Course 2",
+            "description": "another short description"
+        }
+    ]
+    ```
 - `/api/v1/courses/:id` GET a certain course
+
+    ```json
+    {
+        "id": "1",
+        "title": "Course 1",
+        "description": "a short description",
+        "members":
+        [
+            "12345",
+            "12346"
+        ],
+        "labels":
+        [
+            "123",
+            "124"
+        ],
+        "entries":
+        [
+            {
+                "id": "1",
+                "date": "2018-06-20 15:04:05",
+                "message": "test test",
+                "pictures":
+                [
+                    "https://example.com/picture1.png",
+                    "https:/example.com/picture2.jpg"
+                ]
+            },
+            {
+                "id": "2",
+                "date": "2018-06-20 15:12:48",
+                "message": "hello world",
+                "pictures":
+                [
+                    "https://example.com/picture1.png",
+                    "https:/example.com/picture2.jpg"
+                ]
+            }
+        ]
+    }
+    ```
+- `/api/v1/courses/:id/users` GET all subscribed members from a course
+
+    ```json
+    [
+        {
+            "id": "12345",
+            "name": "Mathias",
+            "surname": "Hertzel",
+            "email": "mathias.hertzel@gmail.com"
+        },
+        {
+            "id": "12345",
+            "name": "Mathias",
+            "surname": "Hertzel",
+            "email": "mathias.hertzel@gmail.com"
+        }
+    ]
+    ```
+- `/api/v1/courses/:id/users/subscribe` POST user ids that will be subscribed to the course
+    Input
+    ```json
+    [
+        {
+            "id": "1"
+        },
+        {
+            "id": "2"
+        }
+    ]
+    ```
+
+- `/api/v1/courses/:id/users/unsubscribe` POST user ids that will be unsubscribed from the course
+    Input
+    ```json
+    [
+        {
+            "id": "1"
+        },
+        {
+            "id": "2"
+        }
+    ]
+   ```
+

@@ -9,10 +9,14 @@ func (a *AppServer) authenticatedRoutes() *httprouter.Router {
 
 	// User
 	router.GET("/api/v1/users/:id", a.GetUserHandler())
+	router.GET("/api/v1/users/:id/courses", a.GetMyCoursesHandler())
 	router.GET("/api/v1/me", a.GetMeHandler())
 
 	// Courses
-	router.GET("/api/v1/courses/:id", a.GetCourseHandler())
+	router.GET("/api/v1/courses/:courseID", a.GetCourseHandler())
+	router.GET("/api/v1/courses/:courseID/users", a.GetMembersHandler())
+	router.POST("/api/v1/courses/:courseID/users/subscribe", a.AddMembersHandler())
+	router.POST("/api/v1/courses/:courseID/users/unsubscribe", a.RemoveMembersHandler())
 	router.GET("/api/v1/courses", a.GetAllCoursesHandler())
 
 	// CourseEntries

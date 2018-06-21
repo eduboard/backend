@@ -2,46 +2,54 @@ package userService
 
 import (
 	"errors"
+	"fmt"
 	"github.com/eduboard/backend"
 	"github.com/eduboard/backend/mock"
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/mgo.v2/bson"
 	"testing"
 )
 
 var r = mock.UserRepository{
 	FindFnInvoked: false,
-	FindFn: func(id string) (error, *eduboard.User) {
+	FindFn: func(id string) (error, eduboard.User) {
 		if id == "0" {
-			return nil, &eduboard.User{ID: "0"}
+			return nil, eduboard.User{ID: "0"}
 		}
-		return errors.New("not found"), &eduboard.User{}
+		return errors.New("not found"), eduboard.User{}
 	},
 	FindByEmailFnInvoked: false,
-	FindByEmailFn: func(email string) (error, *eduboard.User) {
+	FindByEmailFn: func(email string) (error, eduboard.User) {
 		if email == "existing@mail.com" {
-			return nil, &eduboard.User{ID: "0", PasswordHash: "password"}
+			return nil, eduboard.User{ID: "0", PasswordHash: "password"}
 		}
-		return errors.New("not found"), &eduboard.User{}
+		return errors.New("not found"), eduboard.User{}
 	},
 	FindBySessionIDFnInvoked: false,
-	FindBySessionIDFn: func(sessionID string) (error, *eduboard.User) {
+	FindBySessionIDFn: func(sessionID string) (error, eduboard.User) {
 		if sessionID == "sessionID-0-0-0" {
-			return nil, &eduboard.User{ID: "1"}
+			return nil, eduboard.User{ID: "1"}
 		}
-		return errors.New("not found"), &eduboard.User{}
+		return errors.New("not found"), eduboard.User{}
 	},
 	StoreFnInvoked: false,
 	StoreFn: func(user *eduboard.User) error {
+		if user.Email == "fail@mail.com" {
+			return errors.New("error storing user")
+		}
 		return nil
 	},
 	UpdateSessionIDFnInvoked: false,
-	UpdateSessionIDFn: func(user *eduboard.User) (error, *eduboard.User) {
+	UpdateSessionIDFn: func(user eduboard.User) (error, eduboard.User) {
 		return nil, user
 	},
 }
 var a = mock.AuthenticatorMock{
 	HashFnInvoked: false,
 	HashFn: func(password string) (string, error) {
+		if password == "longpasswordbuthashfailed" {
+			return "", errors.New("Error hashing password")
+		}
 		return password, nil
 	},
 	CompareHashFnInvoked: false,
@@ -75,6 +83,8 @@ func TestUserService_CreateUser(t *testing.T) {
 	}{
 		{"user exists", "existing@mail.com", "password", true},
 		{"password too short", "new@mail.com", "pass", true},
+		{"error hashing password", "new@mail.com", "longpasswordbuthashfailed", true},
+		{"error storing user", "fail@mail.com", "longpassword", true},
 		{"new user", "new@mail.com", "longpassword", false},
 	}
 
@@ -88,8 +98,10 @@ func TestUserService_CreateUser(t *testing.T) {
 			err, user := us.CreateUser(&eduboard.User{Email: v.email}, v.password)
 			if v.error {
 				assert.NotNil(t, err, "did not fail to create existing user")
-				assert.False(t, r.StoreFnInvoked, "Store was invoked")
-				assert.Equal(t, &eduboard.User{}, user, "did not return empty user")
+				if err.Error() != "error storing user: error storing user" {
+					assert.False(t, r.StoreFnInvoked, "Store was invoked")
+				}
+				assert.Equal(t, eduboard.User{}, user, "did not return empty user")
 				return
 			}
 
@@ -121,12 +133,12 @@ func TestUserService_GetUser(t *testing.T) {
 			err, user := us.GetUser(v.id)
 			if v.error {
 				assert.NotNil(t, err, "did not fail to get non-existing user")
-				assert.Equal(t, &eduboard.User{}, user, "did not return empty user")
+				assert.Equal(t, eduboard.User{}, user, "did not return empty user")
 				assert.True(t, r.FindFnInvoked, "Find was not invoked")
 				return
 			}
 			assert.Nil(t, err, "failed to get existing user")
-			assert.NotEqual(t, &eduboard.User{}, user, "returned non-empty user")
+			assert.NotEqual(t, eduboard.User{}, user, "returned non-empty user")
 			assert.True(t, r.FindFnInvoked, "Find was not invoked")
 		})
 	}
@@ -154,7 +166,7 @@ func TestUserService_Login(t *testing.T) {
 			err, user := us.Login(v.email, v.password)
 			if v.error {
 				assert.NotNil(t, err, "did not fail to log in user")
-				assert.Equal(t, &eduboard.User{}, user, "did not return empty user")
+				assert.Equal(t, eduboard.User{}, user, "did not return empty user")
 				assert.False(t, r.UpdateSessionIDFnInvoked, "UpdateSessionID invoked")
 				return
 			}
@@ -193,6 +205,69 @@ func TestUserService_Logout(t *testing.T) {
 			assert.Nil(t, err, "caused error logging out user")
 			assert.True(t, r.FindBySessionIDFnInvoked, "FindBySessionID was not invoked")
 			assert.True(t, r.UpdateSessionIDFnInvoked, "UpdateSessionID was not invoked")
+		})
+	}
+}
+
+func TestUserService_GetMyCourses(t *testing.T) {
+	t.Parallel()
+	var mockUserRepo mock.UserRepository
+	var mockCourseRepo mock.CourseRepository
+
+	service := UserService{r: &mockUserRepo}
+
+	course1 := eduboard.Course{ID: "1", Title: "Course 1", Members: []string{"1"}}
+
+	var testCases = []struct {
+		name     string
+		input    string
+		error    bool
+		expected []eduboard.Course
+	}{
+		{"success", "1", false, []eduboard.Course{course1}},
+		{"invalid id", "", true, []eduboard.Course{}},
+		{"unexpected repository error", "2", true, []eduboard.Course{}},
+	}
+
+	mockUserRepo.IsIDValidFn = func(id string) bool {
+		switch id {
+		case "":
+			return false
+		case "1":
+			return true
+		case "2":
+			return true
+		default:
+			return false
+		}
+	}
+
+	mockCourseRepo.FindManyFn = func(query bson.M) (error, []eduboard.Course) {
+		switch query["members"] {
+		case "1":
+			return nil, []eduboard.Course{course1}
+		case "2":
+			return errors.New("internal repo error"), []eduboard.Course{}
+		default:
+			return errors.New("not found"), []eduboard.Course{}
+		}
+	}
+
+	for _, v := range testCases {
+		t.Run(fmt.Sprintf("FindByMember: %s", v.name), func(t *testing.T) {
+			mockUserRepo.IsIDValidFnInvoked = false
+			mockCourseRepo.FindManyFnInvoked = false
+
+			err, courses := service.GetMyCourses(v.input, &mockCourseRepo)
+			assert.True(t, mockUserRepo.IsIDValidFnInvoked, "user repository call was not invoked")
+
+			assert.Equal(t, v.expected, courses, "courses do not equal expected value")
+
+			if v.error {
+				assert.Error(t, err, "did not return error when expected")
+				return
+			}
+			assert.Nil(t, err, "returned error when it shouldn't")
 		})
 	}
 }
