@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestAppServer_PostCourseEntryHandler(t *testing.T) {
@@ -36,6 +37,16 @@ func TestAppServer_PostCourseEntryHandler(t *testing.T) {
 		return nil, entry
 	}
 	a := AppServer{CourseEntryService: &service, Logger: log.New(os.Stdout, "", 0)}
+
+	service.StoreCourseEntryFilesFn = func(files [][]byte, id string, date time.Time) (error, []string) {
+		if len(files) == 0 {
+			return nil, []string{}
+		}
+		if len(files) == 1 {
+			return nil, []string{"/test/test/1.jpg"}
+		}
+		return errors.New("invalid something error while storing files"), []string{}
+	}
 
 	for _, v := range testCases {
 		t.Run(v.name, func(t *testing.T) {

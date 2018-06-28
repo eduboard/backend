@@ -2,18 +2,27 @@ package courseEntryService
 
 import (
 	"github.com/eduboard/backend"
+	"github.com/eduboard/backend/upload"
 	"github.com/pkg/errors"
 	"gopkg.in/mgo.v2/bson"
+	"strconv"
+	"time"
 )
 
 func New(repository eduboard.CourseEntryRepository) CourseEntryService {
 	return CourseEntryService{
 		ER: repository,
+		u: &upload.Uploader{},
 	}
+}
+
+type Uploader interface {
+	UploadFile(file []byte, course string, filename string) (error, string)
 }
 
 type CourseEntryService struct {
 	ER eduboard.CourseEntryRepository
+	u Uploader
 }
 
 func (cES CourseEntryService) StoreCourseEntry(entry *eduboard.CourseEntry, cfu eduboard.CourseFindUpdater) (error, *eduboard.CourseEntry) {
@@ -37,6 +46,18 @@ func (cES CourseEntryService) StoreCourseEntry(entry *eduboard.CourseEntry, cfu 
 	}
 
 	return nil, entry
+}
+
+func (cES CourseEntryService) StoreCourseEntryFiles(files [][]byte, id string, date time.Time) (error, []string) {
+	paths := []string{}
+	for key, file := range files {
+		err, url := cES.u.UploadFile(file, id, date.String()+"_"+strconv.Itoa(key))
+		if err != nil {
+			return err, []string{}
+		}
+		paths = append(paths, url)
+	}
+	return nil, paths
 }
 
 func (cES CourseEntryService) UpdateCourseEntry(*eduboard.CourseEntry) (*eduboard.CourseEntry, error) {

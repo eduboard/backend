@@ -7,7 +7,9 @@ import (
 	"os"
 )
 
-func UploadFile(file []byte, course string, filename string) (error, string) {
+type Uploader struct{}
+
+func (u *Uploader) UploadFile(file []byte, course string, filename string) (error, string) {
 	// check content type
 	dir := string("./files/" + course + "/")
 	path := string(dir + filename)

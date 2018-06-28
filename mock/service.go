@@ -2,6 +2,7 @@ package mock
 
 import (
 	"github.com/eduboard/backend"
+	"time"
 )
 
 type CourseService struct {
@@ -60,6 +61,9 @@ type CourseEntryService struct {
 	StoreCourseEntryFn        func(entry *eduboard.CourseEntry, cfu eduboard.CourseFindUpdater) (err error, courseEntry *eduboard.CourseEntry)
 	StoreCourseEntryFnInvoked bool
 
+	StoreCourseEntryFilesFn func(files [][]byte, id string, date time.Time) (error, []string)
+	StoreCourseEntryFilesFnInvoked bool
+
 	UpdateCourseEntryFn        func(*eduboard.CourseEntry) (*eduboard.CourseEntry, error)
 	UpdateCourseEntryFnInvoked bool
 
@@ -70,6 +74,11 @@ type CourseEntryService struct {
 func (cSM *CourseEntryService) StoreCourseEntry(entry *eduboard.CourseEntry, cfu eduboard.CourseFindUpdater) (err error, courseEntry *eduboard.CourseEntry) {
 	cSM.StoreCourseEntryFnInvoked = true
 	return cSM.StoreCourseEntryFn(entry, cfu)
+}
+
+func (cSM *CourseEntryService) StoreCourseEntryFiles(files [][]byte, id string, date time.Time) (error, []string) {
+	cSM.StoreCourseEntryFilesFnInvoked = true
+	return cSM.StoreCourseEntryFilesFn(files, id, date)
 }
 
 func (cSM *CourseEntryService) UpdateCourseEntry(e *eduboard.CourseEntry) (*eduboard.CourseEntry, error) {

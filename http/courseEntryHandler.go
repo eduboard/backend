@@ -3,12 +3,10 @@ package http
 import (
 	"encoding/json"
 	"github.com/eduboard/backend"
-	"github.com/eduboard/backend/upload"
 	"github.com/eduboard/backend/url"
 	"github.com/julienschmidt/httprouter"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -45,13 +43,9 @@ func (a *AppServer) PostCourseEntryHandler() httprouter.Handle {
 			return
 		}
 
-		paths := []string{}
-		for key, picture := range request.Pictures {
-			err, url := upload.UploadFile(picture, id, request.Date.String()+"_"+strconv.Itoa(key))
-			if err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-			paths = append(paths, url)
+		err, paths := a.CourseEntryService.StoreCourseEntryFiles(request.Pictures, id, request.Date)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 
 		pURLs, err := url.URLifyStrings(paths)
