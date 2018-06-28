@@ -45,12 +45,16 @@ func (a *AppServer) PostCourseEntryHandler() httprouter.Handle {
 
 		err, paths := a.CourseEntryService.StoreCourseEntryFiles(request.Pictures, id, request.Date)
 		if err != nil {
+			a.Logger.Printf("error storing files: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 		pURLs, err := url.URLifyStrings(paths)
 		if err != nil {
+			a.Logger.Printf("error parsing urls: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 		entryModel.CourseID = bson.ObjectIdHex(id)
