@@ -11,7 +11,7 @@ func UploadFile(file []byte, course string, filename string) (error, string) {
 	// check content type
 	dir := string("./files/" + course + "/")
 	path := string(dir + filename)
-	serverFile := string("/filestore/" + course + "/" + filename)
+	serverFile := string("/files/" + course + "/" + filename)
 
 	contentType := http.DetectContentType(file)
 

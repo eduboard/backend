@@ -28,13 +28,13 @@ func (a *AppServer) initialize() {
 	privateChain := Chain(protected, Logger(a.Logger), CORS, NewAuthMiddleware(a.UserService))
 	publicChain := Chain(public, Logger(a.Logger), CORS)
 	staticChain := Chain(http.FileServer(http.Dir(a.Static)), Logger(a.Logger), CORS)
-	filesChain := Chain(http.FileServer(http.Dir(a.Static)), Logger(a.Logger), CORS)
+	filesChain := Chain(http.StripPrefix("/files", http.FileServer(http.Dir(a.Files))), Logger(a.Logger), CORS)
 
 	mux := http.NewServeMux()
 	mux.Handle("/api/v1/", privateChain)
 	mux.Handle("/api/", publicChain)
-	mux.Handle("/filestore/", filesChain)
 	mux.Handle("/", staticChain)
+	mux.Handle("/files/", filesChain)
 
 	a.httpServer = &http.Server{
 		Addr:           a.Host,

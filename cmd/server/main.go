@@ -39,6 +39,7 @@ func main() {
 	server := http.AppServer{
 		Host:                  c.Host,
 		Static:                c.StaticDir,
+		Files:                 c.FilesDir,
 		Logger:                log.New(logDst, "", log.LstdFlags),
 		UserService:           userService.New(repository.UserRepository),
 		UserRepository:        repository.UserRepository,
