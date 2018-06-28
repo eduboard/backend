@@ -33,6 +33,7 @@ func (a *AppServer) initialize() {
 	mux := http.NewServeMux()
 	mux.Handle("/api/v1/", privateChain)
 	mux.Handle("/api/", publicChain)
+	mux.Handle("/filestore/", filesChain)
 	mux.Handle("/", staticChain)
 	mux.Handle("/files/", filesChain)
 
