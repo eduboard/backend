@@ -7,6 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/mgo.v2/bson"
 	"testing"
+	"time"
 )
 
 func TestNew(t *testing.T) {
@@ -68,6 +69,40 @@ func TestCourseEntryService_StoreCourseEntry(t *testing.T) {
 			assert.True(t, mockEntryRepo.InsertFnInvoked, "insert was not invoked")
 			assert.True(t, bson.IsObjectIdHex(e.ID.Hex()), "new entry does not have valid ID")
 			return
+		})
+	}
+}
+
+func TestCourseEntryService_StoreCourseEntryFiles(t *testing.T) {
+	var testCases = []struct {
+		name string
+		error bool
+		files [][]byte
+		course string
+	}{
+		{"success", false, [][]byte{[]byte("test")}, "success"},
+		{"error", true, [][]byte{[]byte("moep")}, "failure"},
+	}
+	uploader := mock.Uploader{}	
+	uploader.UploadFileFn = func(file []byte, course string, filename string) (error, string) {
+		if course == "success" {
+			return nil, filename
+		}
+		return errors.New("error uploading files"), ""
+	}
+	service := CourseEntryService{u: &uploader}
+
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			uploader.UploadFileFnInvoked = false
+
+			err, _ := service.StoreCourseEntryFiles(v.files, v.course, time.Now())
+			if v.error {
+				assert.NotNil(t, err, "error nil")
+				return
+			}
+			assert.Nil(t, err, "error not nil")
+
 		})
 	}
 }
