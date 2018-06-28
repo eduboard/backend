@@ -3,10 +3,12 @@ package http
 import (
 	"encoding/json"
 	"github.com/eduboard/backend"
+	"github.com/eduboard/backend/upload"
 	"github.com/eduboard/backend/url"
 	"github.com/julienschmidt/httprouter"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -14,7 +16,7 @@ func (a *AppServer) PostCourseEntryHandler() httprouter.Handle {
 	type request struct {
 		Date      time.Time `json:"date"`
 		Message   string    `json:"message"`
-		Pictures  []string  `json:"pictures"`
+		Pictures  [][]byte  `json:"pictures"`
 		Published bool      `json:"published"`
 	}
 	type response struct {
@@ -43,10 +45,18 @@ func (a *AppServer) PostCourseEntryHandler() httprouter.Handle {
 			return
 		}
 
-		pURLs, err := url.URLifyStrings(request.Pictures)
+		paths := []string{}
+		for key, picture := range request.Pictures {
+			err, url := upload.UploadFile(picture, id, request.Date.String()+"_"+strconv.Itoa(key))
+			if err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+			paths = append(paths, url)
+		}
+
+		pURLs, err := url.URLifyStrings(paths)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 
 		entryModel.CourseID = bson.ObjectIdHex(id)

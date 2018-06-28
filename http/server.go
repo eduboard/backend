@@ -10,7 +10,7 @@ import (
 type AppServer struct {
 	Host                  string
 	Static                string
-	Files                string
+	Files                 string
 	Logger                *log.Logger
 	UserService           eduboard.UserService
 	UserRepository        eduboard.UserRepository

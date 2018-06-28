@@ -18,6 +18,7 @@ func TestGetConfig(t *testing.T) {
 		{"MONGO_USER", "testuser"},
 		{"MONGO_PASS", "testpass"},
 		{"STATIC_DIR", "testdir"},
+		{"TEST_DIR", "testfilesdir"},
 		{"LOGFILE", "backend.log"},
 	}
 
@@ -35,6 +36,7 @@ func TestGetConfig(t *testing.T) {
 				"testuser",
 				"testpass",
 				"testdir",
+				"testfilesdir",
 				"backend.log"}},
 		{"unset", true,
 			config{
@@ -45,6 +47,7 @@ func TestGetConfig(t *testing.T) {
 				"",
 				"",
 				"./static",
+				"./files",
 				""}},
 	}
 
