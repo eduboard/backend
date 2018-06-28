@@ -12,7 +12,7 @@ import (
 func New(repository eduboard.CourseEntryRepository) CourseEntryService {
 	return CourseEntryService{
 		ER: repository,
-		u: &upload.Uploader{},
+		u:  &upload.Uploader{},
 	}
 }
 
@@ -22,7 +22,7 @@ type Uploader interface {
 
 type CourseEntryService struct {
 	ER eduboard.CourseEntryRepository
-	u Uploader
+	u  Uploader
 }
 
 func (cES CourseEntryService) StoreCourseEntry(entry *eduboard.CourseEntry, cfu eduboard.CourseFindUpdater) (error, *eduboard.CourseEntry) {

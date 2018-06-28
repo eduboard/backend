@@ -61,7 +61,7 @@ type CourseEntryService struct {
 	StoreCourseEntryFn        func(entry *eduboard.CourseEntry, cfu eduboard.CourseFindUpdater) (err error, courseEntry *eduboard.CourseEntry)
 	StoreCourseEntryFnInvoked bool
 
-	StoreCourseEntryFilesFn func(files [][]byte, id string, date time.Time) (error, []string)
+	StoreCourseEntryFilesFn        func(files [][]byte, id string, date time.Time) (error, []string)
 	StoreCourseEntryFilesFnInvoked bool
 
 	UpdateCourseEntryFn        func(*eduboard.CourseEntry) (*eduboard.CourseEntry, error)

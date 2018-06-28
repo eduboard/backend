@@ -75,15 +75,15 @@ func TestCourseEntryService_StoreCourseEntry(t *testing.T) {
 
 func TestCourseEntryService_StoreCourseEntryFiles(t *testing.T) {
 	var testCases = []struct {
-		name string
-		error bool
-		files [][]byte
+		name   string
+		error  bool
+		files  [][]byte
 		course string
 	}{
 		{"success", false, [][]byte{[]byte("test")}, "success"},
 		{"error", true, [][]byte{[]byte("moep")}, "failure"},
 	}
-	uploader := mock.Uploader{}	
+	uploader := mock.Uploader{}
 	uploader.UploadFileFn = func(file []byte, course string, filename string) (error, string) {
 		if course == "success" {
 			return nil, filename
