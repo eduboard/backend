@@ -1,10 +1,11 @@
 package upload
 
 import (
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 )
 
 type Uploader struct{}
@@ -17,7 +18,9 @@ func (u *Uploader) UploadFile(file []byte, course string, filename string) (erro
 
 	contentType := http.DetectContentType(file)
 
-	fmt.Println(contentType)
+	if strings.Split(contentType, "/")[0] != "image" {
+		return errors.New("filetype not supported"), ""
+	}
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		os.MkdirAll(dir, os.ModePerm)
