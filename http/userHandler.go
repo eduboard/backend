@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"github.com/eduboard/backend"
+	"github.com/eduboard/backend/url"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 	"time"
@@ -186,23 +187,51 @@ func (a *AppServer) GetMeHandler() httprouter.Handle {
 }
 
 func (a *AppServer) GetMyCoursesHandler() httprouter.Handle {
-	type response struct {
-		ID          string `json:"id"`
-		Title       string `json:"title"`
-		Description string `json:"description"`
+	type entryResponse struct {
+		ID        string    `json:"id"`
+		Date      time.Time `json:"date"`
+		Message   string    `json:"message"`
+		Pictures  []string  `json:"pictures"`
+		Published bool      `json:"published"`
+	}
+
+	type courseResponse struct {
+		ID          string          `json:"id"`
+		Title       string          `json:"title"`
+		Description string          `json:"description"`
+		Members     []string        `json:"members,omitempty"`
+		Labels      []string        `json:"labels,omitempty"`
+		Entries     []entryResponse `json:"entries,omitempty"`
 	}
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		id := p.ByName("id")
-		err, courses := a.UserService.GetMyCourses(id, a.CourseRepository)
+		err, courses := a.UserService.GetMyCourses(id, a.CourseRepository, a.CourseEntryRepository)
 		if err != nil {
 			a.Logger.Printf("error getting courses: %v", err)
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
 
-		var res = make([]response, len(courses))
+		var res = make([]courseResponse, len(courses))
 		for k, v := range courses {
-			res[k] = response{ID: v.ID.Hex(), Title: v.Title, Description: v.Description}
+			res[k] = courseResponse{
+				ID:          v.ID.Hex(),
+				Title:       v.Title,
+				Description: v.Description,
+				Members:     v.Members,
+				Labels:      v.Labels,
+				Entries:     make([]entryResponse, len(v.Entries)),
+			}
+
+			for eK, eV := range v.Entries {
+				res[k].Entries[eK] = entryResponse{
+					ID:        eV.ID.Hex(),
+					Date:      eV.Date,
+					Message:   eV.Message,
+					Pictures:  url.StringifyURLs(eV.Pictures),
+					Published: eV.Published,
+				}
+			}
 		}
 
 		if err = json.NewEncoder(w).Encode(&res); err != nil {

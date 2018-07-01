@@ -34,7 +34,7 @@ type UserRepository interface {
 type UserService interface {
 	CreateUser(u *User, password string) (error, User)
 	GetUser(id string) (error, User)
-	GetMyCourses(id string, cS CourseManyFinder) (error, []Course)
+	GetMyCourses(id string, cS CourseManyFinder, cEMF CourseEntryManyFinder) (error, []Course)
 	UserAuthenticationProvider
 }
 

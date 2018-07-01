@@ -56,7 +56,7 @@ func (uS *UserService) GetUser(id string) (err error, user eduboard.User) {
 	return uS.r.Find(id)
 }
 
-func (uS *UserService) GetMyCourses(id string, cBMF eduboard.CourseManyFinder) (err error, user []eduboard.Course) {
+func (uS *UserService) GetMyCourses(id string, cBMF eduboard.CourseManyFinder, cEMF eduboard.CourseEntryManyFinder) (err error, user []eduboard.Course) {
 
 	if !uS.r.IsIDValid(id) {
 		return errors.New("invalid id"), []eduboard.Course{}
@@ -66,6 +66,16 @@ func (uS *UserService) GetMyCourses(id string, cBMF eduboard.CourseManyFinder) (
 	err, result = cBMF.FindMany(bson.M{"members": id})
 	if err != nil {
 		return errors.Wrap(err, "error finding courses from member"), []eduboard.Course{}
+	}
+
+	for k, course := range result {
+		if len(course.EntryIDs) > 0 {
+			err, e := cEMF.FindMany(bson.M{"courseID": course.ID})
+			if err != nil {
+				return errors.Wrapf(err, "error finding courseEntries from %d", course.ID), []eduboard.Course{}
+			}
+			result[k].Entries = e
+		}
 	}
 
 	return nil, result

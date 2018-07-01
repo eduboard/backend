@@ -248,7 +248,7 @@ func TestAppServer_GetMeHandler(t *testing.T) {
 
 func TestAppServer_GetMyCoursesHandler(t *testing.T) {
 	mockService := mock.UserService{}
-	mockService.GetMyCoursesFn = func(id string, cF eduboard.CourseManyFinder) (error, []eduboard.Course) {
+	mockService.GetMyCoursesFn = func(id string, cF eduboard.CourseManyFinder, cEF eduboard.CourseEntryManyFinder) (error, []eduboard.Course) {
 		switch id {
 		case "userid":
 			return nil, []eduboard.Course{{ID: "1", Title: "Course 1"}}

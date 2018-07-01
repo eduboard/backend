@@ -11,7 +11,7 @@ type CourseService struct {
 	CoursesFn        func() (err error, courses []eduboard.Course)
 	CoursesFnInvoked bool
 
-	GetCoursesByMemberFn        func(id string) (error, []eduboard.Course)
+	GetCoursesByMemberFn        func(id string, cef eduboard.CourseEntryManyFinder) (error, []eduboard.Course)
 	GetCoursesByMemberFnInvoked bool
 
 	GetMembersFn        func(course string, uF eduboard.UserFinder) (error, []eduboard.User)
@@ -36,9 +36,9 @@ func (cSM *CourseService) GetAllCourses() (err error, courses []eduboard.Course)
 	return cSM.CoursesFn()
 }
 
-func (cSM *CourseService) GetCoursesByMember(id string) (error, []eduboard.Course) {
+func (cSM *CourseService) GetCoursesByMember(id string, cef eduboard.CourseEntryManyFinder) (error, []eduboard.Course) {
 	cSM.GetCoursesByMemberFnInvoked = true
-	return cSM.GetCoursesByMemberFn(id)
+	return cSM.GetCoursesByMemberFn(id, cef)
 }
 
 func (cSM *CourseService) GetMembers(course string, uF eduboard.UserFinder) (error, []eduboard.User) {
@@ -89,7 +89,7 @@ type UserService struct {
 	GetUserFn        func(id string) (error, eduboard.User)
 	GetUserFnInvoked bool
 
-	GetMyCoursesFn        func(id string, cBMF eduboard.CourseManyFinder) (error, []eduboard.Course)
+	GetMyCoursesFn        func(id string, cBMF eduboard.CourseManyFinder, cEMF eduboard.CourseEntryManyFinder) (error, []eduboard.Course)
 	GetMyCoursesFnInvoked bool
 
 	UserAuthenticationProvider
@@ -107,9 +107,9 @@ func (uSM *UserService) GetUser(id string) (error, eduboard.User) {
 	return uSM.GetUserFn(id)
 }
 
-func (uSM *UserService) GetMyCourses(id string, cBMF eduboard.CourseManyFinder) (error, []eduboard.Course) {
+func (uSM *UserService) GetMyCourses(id string, cBMF eduboard.CourseManyFinder, cEMF eduboard.CourseEntryManyFinder) (error, []eduboard.Course) {
 	uSM.GetMyCoursesFnInvoked = true
-	return uSM.GetMyCoursesFn(id, cBMF)
+	return uSM.GetMyCoursesFn(id, cBMF, cEMF)
 }
 
 type UserAuthenticationProvider struct {

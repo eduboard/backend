@@ -39,8 +39,23 @@ func (cS CourseService) GetCourse(id string, cef eduboard.CourseEntryManyFinder)
 	return nil, course
 }
 
-func (cS CourseService) GetCoursesByMember(id string) (error, []eduboard.Course) {
-	return cS.CR.FindMany(bson.M{"members": id})
+func (cS CourseService) GetCoursesByMember(id string, cef eduboard.CourseEntryManyFinder) (error, []eduboard.Course) {
+	err, courses := cS.CR.FindMany(bson.M{"members": id})
+	if err != nil {
+		return errors.Wrapf(err, "error finding courses %s", id), []eduboard.Course{}
+	}
+
+	for _, course := range courses {
+		if len(course.EntryIDs) > 0 {
+			err, e := cef.FindMany(bson.M{"courseID": course.ID})
+			if err != nil {
+				return errors.Wrapf(err, "error finding courseEntries from %s", course.ID), []eduboard.Course{}
+			}
+			course.Entries = e
+		}
+	}
+
+	return nil, courses
 }
 
 func (cS CourseService) GetMembers(id string, uF eduboard.UserFinder) (error, []eduboard.User) {

@@ -68,6 +68,7 @@ func TestCourseService_GetCourse(t *testing.T) {
 
 	course := eduboard.Course{ID: "1", Title: "Course 1"}
 	courseWithEntries := eduboard.Course{ID: "2", Title: "Course 2", EntryIDs: []bson.ObjectId{"1", "2"}}
+	brokenCourseWithEntries := eduboard.Course{ID: "4", Title: "Course 4", EntryIDs: []bson.ObjectId{"1"}}
 	courseEntry1 := eduboard.CourseEntry{ID: "1", CourseID: "2", Message: "First Entry", Published: true}
 	courseEntry2 := eduboard.CourseEntry{ID: "2", CourseID: "2", Message: "Second Entry", Published: true}
 
@@ -84,6 +85,7 @@ func TestCourseService_GetCourse(t *testing.T) {
 		{"success empty", "1", false, false, course},
 		{"success", "2", false, true, expectedCourse},
 		{"empty", "3", true, false, eduboard.Course{}},
+		{"many not found", "4", true, true, eduboard.Course{}},
 		{"error", "", true, false, eduboard.Course{}},
 	}
 
@@ -95,12 +97,17 @@ func TestCourseService_GetCourse(t *testing.T) {
 			return nil, course
 		case "2":
 			return nil, courseWithEntries
+		case "4":
+			return nil, brokenCourseWithEntries
 		default:
 			return errors.New("not found"), eduboard.Course{}
 		}
 	}
 
 	mockEntryRepo.FindManyFn = func(query bson.M) (error, []eduboard.CourseEntry) {
+		if string(query["courseID"].(bson.ObjectId)) == "4" {
+			return errors.New("error"), nil
+		}
 		return nil, []eduboard.CourseEntry{courseEntry1, courseEntry2}
 	}
 
@@ -127,9 +134,14 @@ func TestCourseService_GetCoursesByMember(t *testing.T) {
 	t.Parallel()
 
 	var mockCourseRepo mock.CourseRepository
+	var mockEntryRepo mock.CourseEntryRepository
 	service := CourseService{CR: &mockCourseRepo}
 
 	course1 := eduboard.Course{ID: "1", Title: "Course 1", Members: []string{"1"}}
+	courseWithEntries := eduboard.Course{ID: "2", Title: "Course 2", EntryIDs: []bson.ObjectId{"1", "2"}}
+	brokenCourseWithEntries := eduboard.Course{ID: "4", Title: "Course 4", EntryIDs: []bson.ObjectId{"1"}}
+	courseEntry1 := eduboard.CourseEntry{ID: "1", CourseID: "2", Message: "First Entry", Published: true}
+	courseEntry2 := eduboard.CourseEntry{ID: "2", CourseID: "2", Message: "Second Entry", Published: true}
 
 	testCases := []struct {
 		name     string
@@ -139,22 +151,35 @@ func TestCourseService_GetCoursesByMember(t *testing.T) {
 	}{
 		{"success", "1", false, []eduboard.Course{course1}},
 		{"error", "", true, []eduboard.Course{}},
+		{"success with entries", "2", false, []eduboard.Course{courseWithEntries}},
+		{"broken on fetching entries", "4", true, []eduboard.Course{}},
 	}
 
 	mockCourseRepo.FindManyFn = func(update bson.M) (error, []eduboard.Course) {
 		switch update["members"] {
 		case "1":
 			return nil, []eduboard.Course{course1}
+		case "2":
+			return nil, []eduboard.Course{courseWithEntries}
+		case "4":
+			return nil, []eduboard.Course{brokenCourseWithEntries}
 		default:
 			return errors.New("Error fetching courses"), []eduboard.Course{}
 		}
+	}
+	mockEntryRepo.FindManyFn = func(query bson.M) (error, []eduboard.CourseEntry) {
+		if string(query["courseID"].(bson.ObjectId)) == "4" {
+			return errors.New("error"), nil
+		}
+		return nil, []eduboard.CourseEntry{courseEntry1, courseEntry2}
 	}
 
 	for _, v := range testCases {
 		t.Run(v.name, func(t *testing.T) {
 			mockCourseRepo.FindManyFnInvoked = false
+			mockEntryRepo.FindManyFnInvoked = false
 
-			err, courses := service.GetCoursesByMember(v.input)
+			err, courses := service.GetCoursesByMember(v.input, &mockEntryRepo)
 			assert.True(t, mockCourseRepo.FindManyFnInvoked, "courseRepository call was not invoked")
 
 			assert.Equal(t, v.expected, courses, "courses do not equal expected values")

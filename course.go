@@ -46,7 +46,7 @@ type CourseRepository interface {
 type CourseService interface {
 	GetAllCourses() (err error, courses []Course)
 	GetCourse(id string, cef CourseEntryManyFinder) (err error, course Course)
-	GetCoursesByMember(id string) (err error, courses []Course)
+	GetCoursesByMember(id string, cef CourseEntryManyFinder) (err error, courses []Course)
 	GetMembers(id string, uF UserFinder) (error, []User)
 	AddMembers(id string, members []string) (error, Course)
 	RemoveMembers(id string, members []string) (error, Course)

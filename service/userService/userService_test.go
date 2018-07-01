@@ -213,10 +213,17 @@ func TestUserService_GetMyCourses(t *testing.T) {
 	t.Parallel()
 	var mockUserRepo mock.UserRepository
 	var mockCourseRepo mock.CourseRepository
+	var mockCourseEntryRepo mock.CourseEntryRepository
 
 	service := UserService{r: &mockUserRepo}
 
 	course1 := eduboard.Course{ID: "1", Title: "Course 1", Members: []string{"1"}}
+	courseWithEntries := eduboard.Course{ID: "2", Title: "Course 2", Members: []string{"2"}, EntryIDs: []bson.ObjectId{"1", "2"}}
+	brokenCourseWithEntries := eduboard.Course{ID: "4", Title: "Course 4", EntryIDs: []bson.ObjectId{"1"}}
+	courseEntry1 := eduboard.CourseEntry{ID: "1", CourseID: "2", Message: "First Entry", Published: true}
+	courseEntry2 := eduboard.CourseEntry{ID: "2", CourseID: "2", Message: "Second Entry", Published: true}
+
+	courseWithEntries.Entries = []eduboard.CourseEntry{courseEntry1, courseEntry2}
 
 	var testCases = []struct {
 		name     string
@@ -226,16 +233,16 @@ func TestUserService_GetMyCourses(t *testing.T) {
 	}{
 		{"success", "1", false, []eduboard.Course{course1}},
 		{"invalid id", "", true, []eduboard.Course{}},
-		{"unexpected repository error", "2", true, []eduboard.Course{}},
+		{"valid id but user not found", "", true, []eduboard.Course{}},
+		{"success not empty", "2", false, []eduboard.Course{courseWithEntries}},
+		{"unexpected repository error", "4", true, []eduboard.Course{}},
 	}
 
 	mockUserRepo.IsIDValidFn = func(id string) bool {
 		switch id {
 		case "":
 			return false
-		case "1":
-			return true
-		case "2":
+		case "1", "2", "3", "4":
 			return true
 		default:
 			return false
@@ -247,10 +254,19 @@ func TestUserService_GetMyCourses(t *testing.T) {
 		case "1":
 			return nil, []eduboard.Course{course1}
 		case "2":
-			return errors.New("internal repo error"), []eduboard.Course{}
+			return nil, []eduboard.Course{courseWithEntries}
+		case "4":
+			return nil, []eduboard.Course{brokenCourseWithEntries}
 		default:
 			return errors.New("not found"), []eduboard.Course{}
 		}
+	}
+
+	mockCourseEntryRepo.FindManyFn = func(query bson.M) (error, []eduboard.CourseEntry) {
+		if string(query["courseID"].(bson.ObjectId)) == "4" {
+			return errors.New("error"), nil
+		}
+		return nil, []eduboard.CourseEntry{courseEntry1, courseEntry2}
 	}
 
 	for _, v := range testCases {
@@ -258,7 +274,7 @@ func TestUserService_GetMyCourses(t *testing.T) {
 			mockUserRepo.IsIDValidFnInvoked = false
 			mockCourseRepo.FindManyFnInvoked = false
 
-			err, courses := service.GetMyCourses(v.input, &mockCourseRepo)
+			err, courses := service.GetMyCourses(v.input, &mockCourseRepo, &mockCourseEntryRepo)
 			assert.True(t, mockUserRepo.IsIDValidFnInvoked, "user repository call was not invoked")
 
 			assert.Equal(t, v.expected, courses, "courses do not equal expected value")
