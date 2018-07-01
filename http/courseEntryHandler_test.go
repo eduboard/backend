@@ -39,16 +39,16 @@ func TestAppServer_PostCourseEntryHandler(t *testing.T) {
 	}
 
 	service.StoreCourseEntryFilesFn = func(files [][]byte, id string, date time.Time) (error, []string) {
-		if len(files) == 0 {
+		switch len(files) {
+		case 0:
 			return nil, []string{}
-		}
-		if len(files) == 1 {
+		case 1:
 			return nil, []string{"/test/test/1.jpg"}
-		}
-		if len(files) == 3 {
+		case 2:
 			return nil, []string{":test.com/cant/parse/this//"}
+		default:
+			return errors.New("invalid something error while storing files"), []string{}
 		}
-		return errors.New("invalid something error while storing files"), []string{}
 	}
 
 	a := AppServer{CourseEntryService: &service, Logger: log.New(os.Stdout, "", 0)}
