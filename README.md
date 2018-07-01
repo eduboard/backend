@@ -145,7 +145,7 @@ You can start it over the command line (your container name might be different f
         [
             {
                 "id": "1",
-                "date": "2018-06-20 15:04:05",
+                "date": "2018-07-01T15:04:05-07:00",
                 "message": "test test",
                 "pictures":
                 [
@@ -185,6 +185,7 @@ You can start it over the command line (your container name might be different f
     ]
     ```
 - `/api/v1/courses/:id/users/subscribe` POST user ids that will be subscribed to the course
+
     Input
     ```json
     [
@@ -198,6 +199,7 @@ You can start it over the command line (your container name might be different f
     ```
 
 - `/api/v1/courses/:id/users/unsubscribe` POST user ids that will be unsubscribed from the course
+
     Input
     ```json
     [
@@ -209,4 +211,62 @@ You can start it over the command line (your container name might be different f
         }
     ]
    ```
+- `/api/v1/courses/:courseId/entries` POST new entry that will be added to the course with base64 encoded files
 
+    Input
+    ```json
+    {
+        "date": "2018-07-01T15:04:05-07:00",
+        "message": "herpy derpy new messagerpy",
+        "pictures":
+        [
+            "c3VwZXJzZWNyZXQ=",
+            "c3VwZXJzZWNyZXQ="
+        ],
+        "published": true
+    }
+    ```
+    Output
+    ```json
+    {
+        "id": "1",
+        "date": "2018-07-01T15:04:05-07:00",
+        "message": "herpy derpy new messagerpy",
+        "pictures":
+        [
+            "https://example.com/course/file1",
+            "https://example.com/course/file2"
+        ],
+        "published": true
+    }
+    ```
+- `/api/v1/courses/:courseId/entries/:entryId` PUT updates in entry from a course (not yet implemented)
+
+    Input
+    ```json
+    {
+        "date":"2018-07-01T20:04:05-07:00",
+        "message": "herpy derpy",
+        "pictures":
+        [
+            "c3VwZXJzZWNyZXQ=",
+            "c3VwZXJzZWNyZXQ="
+        ],
+        "published": false
+    }
+    ```
+    Output
+    ```json
+    {
+        "id": "1",
+        "date": "2018-07-01T20:04:05-07:00",
+        "message": "herpy derpy",
+        "pictures":
+        [
+            "https://example.com/course/file1",
+            "https://example.com/course/file2"
+        ],
+        "published": false
+    }
+    ```
+- `/api/v1/courses/:courseID/entries/:entryId` DELETE selected entry from a course
