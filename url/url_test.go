@@ -19,7 +19,7 @@ func TestStringifyURLs(t *testing.T) {
 
 	for _, v := range testCases {
 		t.Run(v.name, func(t *testing.T) {
-			s := StringifyURLs(v.input)
+			s := StringifyURLs(v.input...)
 			assert.ElementsMatch(t, v.expected, s, "stringified urls do not match")
 		})
 	}
@@ -40,7 +40,7 @@ func TestURLifyStrings(t *testing.T) {
 
 	for _, v := range testCases {
 		t.Run(v.name, func(t *testing.T) {
-			o, e := URLifyStrings(v.input)
+			o, e := URLifyStrings(v.input...)
 			assert.ElementsMatch(t, v.expected, o, "elements do not match")
 			if v.error {
 				assert.Error(t, e, "no error returned")

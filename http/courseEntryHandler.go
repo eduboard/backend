@@ -43,7 +43,7 @@ func (a *AppServer) PostCourseEntryHandler() httprouter.Handle {
 			return
 		}
 
-		pURLs, err := url.URLifyStrings(request.Pictures)
+		pURLs, err := url.URLifyStrings(request.Pictures...)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			return
@@ -67,7 +67,7 @@ func (a *AppServer) PostCourseEntryHandler() httprouter.Handle {
 			ID:        entry.ID.Hex(),
 			Date:      entry.Date,
 			Message:   entry.Message,
-			Pictures:  url.StringifyURLs(entry.Pictures),
+			Pictures:  url.StringifyURLs(entry.Pictures...),
 			Published: entry.Published,
 		}
 
