@@ -157,6 +157,7 @@ func (a *AppServer) GetMeHandler() httprouter.Handle {
 		Name    string `json:"name"`
 		Surname string `json:"surname"`
 		Email   string `json:"email"`
+		Picture string `json:"profilePicture,omitempty"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -178,6 +179,7 @@ func (a *AppServer) GetMeHandler() httprouter.Handle {
 			Name:    user.Name,
 			Surname: user.Surname,
 			Email:   user.Email,
+			Picture: url.StringifyURLs(user.Picture)[0],
 		}
 
 		if err = json.NewEncoder(w).Encode(response); err != nil {
@@ -238,7 +240,7 @@ func (a *AppServer) GetMyCoursesHandler() httprouter.Handle {
 					ID:        eV.ID.Hex(),
 					Date:      eV.Date,
 					Message:   eV.Message,
-					Pictures:  url.StringifyURLs(eV.Pictures),
+					Pictures:  url.StringifyURLs(eV.Pictures...),
 					Published: eV.Published,
 				}
 			}

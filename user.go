@@ -2,6 +2,7 @@ package eduboard
 
 import (
 	"gopkg.in/mgo.v2/bson"
+	"net/url"
 	"time"
 )
 
@@ -15,6 +16,7 @@ type User struct {
 	SessionExpires time.Time     `json:"sessionExpires" bson:"sessionExpires"`
 	Courses        []string      `json:"courses" bson:"courses"`
 	CreatedAt      time.Time     `json:"createdAt" bson:"createdAt"`
+	Picture        url.URL       `json:"profilePicture" bson:"profilePicture"`
 }
 
 type UserFinder interface {

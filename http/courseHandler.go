@@ -86,7 +86,7 @@ func (a *AppServer) GetCourseHandler() httprouter.Handle {
 				ID:        v.ID.Hex(),
 				Date:      v.Date,
 				Message:   v.Message,
-				Pictures:  url.StringifyURLs(v.Pictures),
+				Pictures:  url.StringifyURLs(v.Pictures...),
 				Published: v.Published,
 			}
 		}
