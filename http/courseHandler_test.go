@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http/httptest"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -74,10 +75,10 @@ func TestAppServer_GetCourseHandler(t *testing.T) {
 	}
 
 	var testCases = []struct {
-		name        string
-		id          string
-		bodylentgth int
-		status      int
+		name       string
+		id         string
+		bodylength int
+		status     int
 	}{
 		{"no entries", "1", 40, 200},
 		{"success", "2", 226, 200},
@@ -106,11 +107,132 @@ func TestAppServer_GetCourseHandler(t *testing.T) {
 
 			r := httptest.NewRequest("GET", "/", nil)
 			rr := httptest.NewRecorder()
-			appServer.GetCourseHandler()(rr, r, httprouter.Params{httprouter.Param{"id", v.id}})
+			appServer.GetCourseHandler()(rr, r, httprouter.Params{httprouter.Param{"courseID", v.id}})
 
 			assert.True(t, mockService.CourseFnInvoked, "GetCourse was not invoked")
 			assert.Equal(t, v.status, rr.Code, "status code unexpected")
-			assert.Equal(t, v.bodylentgth, len(rr.Body.String()), "body length does not match")
+			assert.Equal(t, v.bodylength, len(rr.Body.String()), "body length does not match")
+		})
+	}
+}
+
+func TestAppServer_GetMembersHandler(t *testing.T) {
+	mockService := mock.CourseService{}
+	appServer := AppServer{CourseService: &mockService, Logger: log.New(os.Stdout, "", 0)}
+
+	var testCases = []struct {
+		name       string
+		id         string
+		status     int
+		bodylength int
+	}{
+		{"success", "1", 200, 54},
+		{"error", "2", 404, 0},
+	}
+
+	mockService.GetMembersFn = func(id string, uR eduboard.UserFinder) (error, []eduboard.User) {
+		switch id {
+		case "1":
+			return nil, []eduboard.User{{ID: "1", Name: "User 1"}}
+		default:
+			return errors.New("Error fetching members"), []eduboard.User{}
+		}
+	}
+
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			mockService.GetMembersFnInvoked = false
+
+			r := httptest.NewRequest("GET", "/", nil)
+			rr := httptest.NewRecorder()
+			appServer.GetMembersHandler()(rr, r, httprouter.Params{httprouter.Param{"courseID", v.id}})
+
+			assert.True(t, mockService.GetMembersFnInvoked, "GetMembers was not invoked")
+			assert.Equal(t, v.status, rr.Code, "unexpected status code")
+			assert.Equal(t, v.bodylength, len(rr.Body.String()), "body length does not equal expected value")
+		})
+	}
+}
+
+func TestAppServer_AddMembersHandler(t *testing.T) {
+	mockService := mock.CourseService{}
+	appServer := AppServer{CourseService: &mockService, Logger: log.New(os.Stdout, "", 0)}
+
+	var testCases = []struct {
+		name   string
+		id     string
+		body   string
+		status int
+	}{
+		{"success", "1", `[{"id": "1"},{"id": "2"}]`, 200},
+		{"invalid body", "2", `lala <> ""`, 400},
+		{"error subscribing user", "3", `[{"id": "1"},{"id": "2"}]`, 500},
+	}
+
+	mockService.AddMembersFn = func(id string, members []string) (error, eduboard.Course) {
+		switch id {
+		case "1":
+			if len(members) != 2 {
+				return errors.New("Members are not correct"), eduboard.Course{}
+			}
+			return nil, eduboard.Course{ID: "1"}
+		default:
+			return errors.New("Error fetching members"), eduboard.Course{}
+		}
+	}
+
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			mockService.AddMembersFnInvoked = false
+
+			r := httptest.NewRequest("POST", "/", strings.NewReader(v.body))
+			rr := httptest.NewRecorder()
+			appServer.AddMembersHandler()(rr, r, httprouter.Params{httprouter.Param{"courseID", v.id}})
+
+			if v.status != 400 {
+				assert.True(t, mockService.AddMembersFnInvoked, "AddMembers was not invoked")
+			}
+			assert.Equal(t, v.status, rr.Code, "unexpected status code")
+		})
+	}
+}
+
+func TestAppServer_RemoveMembersHandler(t *testing.T) {
+	mockService := mock.CourseService{}
+	appServer := AppServer{CourseService: &mockService, Logger: log.New(os.Stdout, "", 0)}
+
+	var testCases = []struct {
+		name   string
+		id     string
+		body   string
+		status int
+	}{
+		{"success", "1", `[{"id": "1"},{"id": "2"}]`, 200},
+		{"invalid body", "2", `lala <> ""`, 400},
+		{"error subscribing user", "3", `[{"id": "1"},{"id": "2"}]`, 500},
+	}
+
+	mockService.RemoveMembersFn = func(id string, members []string) (error, eduboard.Course) {
+		switch id {
+		case "1":
+			return nil, eduboard.Course{ID: "1"}
+		default:
+			return errors.New("Error fetching members"), eduboard.Course{}
+		}
+	}
+
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			mockService.RemoveMembersFnInvoked = false
+
+			r := httptest.NewRequest("POST", "/", strings.NewReader(v.body))
+			rr := httptest.NewRecorder()
+			appServer.RemoveMembersHandler()(rr, r, httprouter.Params{httprouter.Param{"courseID", v.id}})
+
+			if v.status != 400 {
+				assert.True(t, mockService.RemoveMembersFnInvoked, "RemoveMembers was not invoked")
+			}
+			assert.Equal(t, v.status, rr.Code, "unexpected status code")
 		})
 	}
 }

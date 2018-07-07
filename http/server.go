@@ -12,6 +12,7 @@ type AppServer struct {
 	Static                string
 	Logger                *log.Logger
 	UserService           eduboard.UserService
+	UserRepository        eduboard.UserRepository
 	CourseService         eduboard.CourseService
 	CourseEntryService    eduboard.CourseEntryService
 	CourseRepository      eduboard.CourseRepository

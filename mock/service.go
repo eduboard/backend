@@ -10,6 +10,18 @@ type CourseService struct {
 
 	CoursesFn        func() (err error, courses []eduboard.Course)
 	CoursesFnInvoked bool
+
+	GetCoursesByMemberFn        func(id string, cef eduboard.CourseEntryManyFinder) (error, []eduboard.Course)
+	GetCoursesByMemberFnInvoked bool
+
+	GetMembersFn        func(course string, uF eduboard.UserFinder) (error, []eduboard.User)
+	GetMembersFnInvoked bool
+
+	AddMembersFn        func(course string, members []string) (error, eduboard.Course)
+	AddMembersFnInvoked bool
+
+	RemoveMembersFn        func(course string, members []string) (error, eduboard.Course)
+	RemoveMembersFnInvoked bool
 }
 
 var _ eduboard.CourseService = (*CourseService)(nil)
@@ -22,6 +34,26 @@ func (cSM *CourseService) GetCourse(id string, cef eduboard.CourseEntryManyFinde
 func (cSM *CourseService) GetAllCourses() (err error, courses []eduboard.Course) {
 	cSM.CoursesFnInvoked = true
 	return cSM.CoursesFn()
+}
+
+func (cSM *CourseService) GetCoursesByMember(id string, cef eduboard.CourseEntryManyFinder) (error, []eduboard.Course) {
+	cSM.GetCoursesByMemberFnInvoked = true
+	return cSM.GetCoursesByMemberFn(id, cef)
+}
+
+func (cSM *CourseService) GetMembers(course string, uF eduboard.UserFinder) (error, []eduboard.User) {
+	cSM.GetMembersFnInvoked = true
+	return cSM.GetMembersFn(course, uF)
+}
+
+func (cSM *CourseService) AddMembers(course string, members []string) (error, eduboard.Course) {
+	cSM.AddMembersFnInvoked = true
+	return cSM.AddMembersFn(course, members)
+}
+
+func (cSM *CourseService) RemoveMembers(course string, members []string) (error, eduboard.Course) {
+	cSM.RemoveMembersFnInvoked = true
+	return cSM.RemoveMembersFn(course, members)
 }
 
 type CourseEntryService struct {
@@ -51,29 +83,37 @@ func (cSM *CourseEntryService) DeleteCourseEntry(entryID string, courseID string
 }
 
 type UserService struct {
-	CreateUserFn        func(u *eduboard.User, password string) (error, *eduboard.User)
+	CreateUserFn        func(u *eduboard.User, password string) (error, eduboard.User)
 	CreateUserFnInvoked bool
 
-	GetUserFn        func(id string) (error, *eduboard.User)
+	GetUserFn        func(id string) (error, eduboard.User)
 	GetUserFnInvoked bool
+
+	GetMyCoursesFn        func(id string, cBMF eduboard.CourseManyFinder, cEMF eduboard.CourseEntryManyFinder) (error, []eduboard.Course)
+	GetMyCoursesFnInvoked bool
 
 	UserAuthenticationProvider
 }
 
 var _ eduboard.UserService = (*UserService)(nil)
 
-func (uSM *UserService) CreateUser(u *eduboard.User, password string) (error, *eduboard.User) {
+func (uSM *UserService) CreateUser(u *eduboard.User, password string) (error, eduboard.User) {
 	uSM.CreateUserFnInvoked = true
 	return uSM.CreateUserFn(u, password)
 }
 
-func (uSM *UserService) GetUser(id string) (error, *eduboard.User) {
+func (uSM *UserService) GetUser(id string) (error, eduboard.User) {
 	uSM.GetUserFnInvoked = true
 	return uSM.GetUserFn(id)
 }
 
+func (uSM *UserService) GetMyCourses(id string, cBMF eduboard.CourseManyFinder, cEMF eduboard.CourseEntryManyFinder) (error, []eduboard.Course) {
+	uSM.GetMyCoursesFnInvoked = true
+	return uSM.GetMyCoursesFn(id, cBMF, cEMF)
+}
+
 type UserAuthenticationProvider struct {
-	LoginFn        func(email string, password string) (error, *eduboard.User)
+	LoginFn        func(email string, password string) (error, eduboard.User)
 	LoginFnInvoked bool
 
 	LogoutFn        func(sessionID string) error
@@ -85,7 +125,7 @@ type UserAuthenticationProvider struct {
 
 var _ eduboard.UserAuthenticationProvider = (*UserAuthenticationProvider)(nil)
 
-func (uAM *UserAuthenticationProvider) Login(email string, password string) (error, *eduboard.User) {
+func (uAM *UserAuthenticationProvider) Login(email string, password string) (error, eduboard.User) {
 	uAM.LoginFnInvoked = true
 	return uAM.LoginFn(email, password)
 }

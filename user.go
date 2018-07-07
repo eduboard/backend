@@ -1,8 +1,8 @@
 package eduboard
 
 import (
-	"time"
 	"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
 type User struct {
@@ -17,22 +17,29 @@ type User struct {
 	CreatedAt      time.Time     `json:"createdAt" bson:"createdAt"`
 }
 
+type UserFinder interface {
+	FindMembers(members []string) (error, []User)
+}
+
 type UserRepository interface {
 	Store(user *User) error
-	Find(id string) (error, *User)
-	FindByEmail(email string) (error, *User)
-	FindBySessionID(sessionID string) (error, *User)
-	UpdateSessionID(user *User) (error, *User)
+	Find(id string) (error, User)
+	FindByEmail(email string) (error, User)
+	FindBySessionID(sessionID string) (error, User)
+	IsIDValid(id string) bool
+	UpdateSessionID(user User) (error, User)
+	UserFinder
 }
 
 type UserService interface {
-	CreateUser(u *User, password string) (error, *User)
-	GetUser(id string) (error, *User)
+	CreateUser(u *User, password string) (error, User)
+	GetUser(id string) (error, User)
+	GetMyCourses(id string, cS CourseManyFinder, cEMF CourseEntryManyFinder) (error, []Course)
 	UserAuthenticationProvider
 }
 
 type UserAuthenticationProvider interface {
-	Login(email string, password string) (error, *User)
+	Login(email string, password string) (error, User)
 	Logout(sessionID string) error
 	CheckAuthentication(sessionID string) (err error, userID string)
 }

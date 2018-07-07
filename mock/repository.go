@@ -18,11 +18,14 @@ type CourseRepository struct {
 	FindFn        func(id string) (error, eduboard.Course)
 	FindFnInvoked bool
 
-	FindManyFn        func() (error, []eduboard.Course)
+	FindManyFn        func(query bson.M) (error, []eduboard.Course)
 	FindManyFnInvoked bool
 
 	UpdateFn        func(id string, update bson.M) (error, eduboard.Course)
 	UpdateFnInvoked bool
+
+	FindByMemberFn        func(member string) (error, []eduboard.Course)
+	FindByMemberFnInvoked bool
 }
 
 var (
@@ -45,7 +48,7 @@ func (cRM *CourseRepository) FindOneByID(id string) (error, eduboard.Course) {
 
 func (cRM *CourseRepository) FindMany(query bson.M) (error, []eduboard.Course) {
 	cRM.FindManyFnInvoked = true
-	return cRM.FindManyFn()
+	return cRM.FindManyFn(query)
 }
 
 func (cRM *CourseRepository) Update(id string, update bson.M) (error, eduboard.Course) {
@@ -53,22 +56,36 @@ func (cRM *CourseRepository) Update(id string, update bson.M) (error, eduboard.C
 	return cRM.UpdateFn(id, update)
 }
 
+func (cRM *CourseRepository) FindByMember(member string) (error, []eduboard.Course) {
+	cRM.FindByMemberFnInvoked = true
+	return cRM.FindByMemberFn(member)
+}
+
 // Course implements the eduboard.CourseRepository interface to mock functions and record successful invocations.
 type UserRepository struct {
 	StoreFn        func(user *eduboard.User) error
 	StoreFnInvoked bool
 
-	FindFn        func(id string) (error, *eduboard.User)
+	FindFn        func(id string) (error, eduboard.User)
 	FindFnInvoked bool
 
-	FindByEmailFn        func(email string) (error, *eduboard.User)
+	FindByEmailFn        func(email string) (error, eduboard.User)
 	FindByEmailFnInvoked bool
 
-	FindBySessionIDFn        func(sessionID string) (error, *eduboard.User)
+	FindBySessionIDFn        func(sessionID string) (error, eduboard.User)
 	FindBySessionIDFnInvoked bool
 
-	UpdateSessionIDFn        func(user *eduboard.User) (error, *eduboard.User)
+	UpdateSessionIDFn        func(user eduboard.User) (error, eduboard.User)
 	UpdateSessionIDFnInvoked bool
+
+	IsIDValidFn        func(id string) bool
+	IsIDValidFnInvoked bool
+
+	FindMyCoursesIDFn        func(id string) (error, []eduboard.Course)
+	FindMyCoursesIDFnInvoked bool
+
+	FindMembersFn        func(members []string) (error, []eduboard.User)
+	FindMembersFnInvoked bool
 }
 
 var _ eduboard.UserRepository = (*UserRepository)(nil)
@@ -78,24 +95,39 @@ func (uRM *UserRepository) Store(user *eduboard.User) error {
 	return uRM.StoreFn(user)
 }
 
-func (uRM *UserRepository) Find(id string) (error, *eduboard.User) {
+func (uRM *UserRepository) Find(id string) (error, eduboard.User) {
 	uRM.FindFnInvoked = true
 	return uRM.FindFn(id)
 }
 
-func (uRM *UserRepository) FindByEmail(email string) (error, *eduboard.User) {
+func (uRM *UserRepository) FindByEmail(email string) (error, eduboard.User) {
 	uRM.FindByEmailFnInvoked = true
 	return uRM.FindByEmailFn(email)
 }
 
-func (uRM *UserRepository) FindBySessionID(sessionID string) (error, *eduboard.User) {
+func (uRM *UserRepository) FindBySessionID(sessionID string) (error, eduboard.User) {
 	uRM.FindBySessionIDFnInvoked = true
 	return uRM.FindBySessionIDFn(sessionID)
 }
 
-func (uRM *UserRepository) UpdateSessionID(user *eduboard.User) (error, *eduboard.User) {
+func (uRM *UserRepository) UpdateSessionID(user eduboard.User) (error, eduboard.User) {
 	uRM.UpdateSessionIDFnInvoked = true
 	return uRM.UpdateSessionIDFn(user)
+}
+
+func (uRM *UserRepository) IsIDValid(id string) bool {
+	uRM.IsIDValidFnInvoked = true
+	return uRM.IsIDValidFn(id)
+}
+
+func (uRM *UserRepository) FindMyCourses(id string) (error, []eduboard.Course) {
+	uRM.FindMyCoursesIDFnInvoked = true
+	return uRM.FindMyCoursesIDFn(id)
+}
+
+func (uRM *UserRepository) FindMembers(members []string) (error, []eduboard.User) {
+	uRM.FindMembersFnInvoked = true
+	return uRM.FindMembersFn(members)
 }
 
 // CourseEntryRepository implements the eduboard.CourseEntryRepository interface to mock functions and record successful invocations.

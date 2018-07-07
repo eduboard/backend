@@ -7,23 +7,23 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/assert"
 	"gopkg.in/mgo.v2/bson"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
-	"log"
-	"os"
 )
 
 func TestAppServer_RegisterUserHandler(t *testing.T) {
 	mockService := mock.UserService{}
-	mockService.CreateUserFn = func(u *eduboard.User, password string) (error, *eduboard.User) {
+	mockService.CreateUserFn = func(u *eduboard.User, password string) (error, eduboard.User) {
 		if len(password) < 8 {
-			return errors.New("too short"), u
+			return errors.New("too short"), *u
 		}
 
 		u.ID = bson.ObjectIdHex("5b1d24e72c5b292fe0d6ee55")
-		return nil, u
+		return nil, *u
 	}
 	appServer := AppServer{UserService: &mockService, Logger: log.New(os.Stdout, "", 0)}
 
@@ -66,12 +66,12 @@ func TestAppServer_RegisterUserHandler(t *testing.T) {
 
 func TestAppServer_LoginUserHandler(t *testing.T) {
 	mockService := mock.UserService{}
-	mockService.LoginFn = func(email string, password string) (error, *eduboard.User) {
+	mockService.LoginFn = func(email string, password string) (error, eduboard.User) {
 		if password != "password" {
-			return errors.New("bad login"), &eduboard.User{}
+			return errors.New("bad login"), eduboard.User{}
 		}
 
-		user := &eduboard.User{ID: bson.ObjectIdHex("5b1d24e72c5b292fe0d6ee55")}
+		user := eduboard.User{ID: bson.ObjectIdHex("5b1d24e72c5b292fe0d6ee55")}
 		return nil, user
 	}
 	appServer := AppServer{UserService: &mockService, Logger: log.New(os.Stdout, "", 0)}
@@ -161,11 +161,11 @@ func TestAppServer_LogoutUserHandler(t *testing.T) {
 
 func TestAppServer_GetUserHandler(t *testing.T) {
 	mockService := mock.UserService{}
-	mockService.GetUserFn = func(id string) (error, *eduboard.User) {
+	mockService.GetUserFn = func(id string) (error, eduboard.User) {
 		if id != "userId" {
-			return errors.New("not found"), &eduboard.User{}
+			return errors.New("not found"), eduboard.User{}
 		}
-		return nil, &eduboard.User{Name: "name"}
+		return nil, eduboard.User{Name: "name"}
 	}
 	appServer := AppServer{UserService: &mockService, Logger: log.New(os.Stdout, "", 0)}
 
@@ -204,11 +204,11 @@ func TestAppServer_GetUserHandler(t *testing.T) {
 
 func TestAppServer_GetMeHandler(t *testing.T) {
 	mockService := mock.UserService{}
-	mockService.GetUserFn = func(id string) (error, *eduboard.User) {
+	mockService.GetUserFn = func(id string) (error, eduboard.User) {
 		if id != "userId" {
-			return errors.New("not found"), &eduboard.User{}
+			return errors.New("not found"), eduboard.User{}
 		}
-		return nil, &eduboard.User{Name: "name"}
+		return nil, eduboard.User{Name: "name"}
 	}
 	appServer := AppServer{UserService: &mockService, Logger: log.New(os.Stdout, "", 0)}
 
@@ -239,6 +239,45 @@ func TestAppServer_GetMeHandler(t *testing.T) {
 				return
 			}
 			assert.True(t, mockService.GetUserFnInvoked, "GetUser was not invoked when it should")
+			if v.status == 200 {
+				assert.NotEmptyf(t, rr.Body, "body should not be empty")
+			}
+		})
+	}
+}
+
+func TestAppServer_GetMyCoursesHandler(t *testing.T) {
+	mockService := mock.UserService{}
+	mockService.GetMyCoursesFn = func(id string, cF eduboard.CourseManyFinder, cEF eduboard.CourseEntryManyFinder) (error, []eduboard.Course) {
+		switch id {
+		case "userid":
+			return nil, []eduboard.Course{{ID: "1", Title: "Course 1"}}
+		default:
+			return errors.New("error fetching courses"), []eduboard.Course{}
+		}
+	}
+	appServer := AppServer{UserService: &mockService, Logger: log.New(os.Stdout, "", 0)}
+
+	var testCases = []struct {
+		name   string
+		userID string
+		status int
+	}{
+		{"success", "userid", 200},
+		{"error", "wrong id", 404},
+	}
+
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			mockService.GetMyCoursesFnInvoked = false
+
+			r := httptest.NewRequest("GET", "/", nil)
+			rr := httptest.NewRecorder()
+			appServer.GetMyCoursesHandler()(rr, r, httprouter.Params{httprouter.Param{"id", v.userID}})
+
+			assert.True(t, mockService.GetMyCoursesFnInvoked, "GetMyCourses was not invoked")
+			assert.Equal(t, v.status, rr.Code, "unexpected status code")
+
 			if v.status == 200 {
 				assert.NotEmptyf(t, rr.Body, "body should not be empty")
 			}
