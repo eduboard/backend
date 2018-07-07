@@ -81,7 +81,7 @@ func TestAppServer_GetCourseHandler(t *testing.T) {
 		status     int
 	}{
 		{"no entries", "1", 40, 200},
-		{"success", "2", 226, 200},
+		{"success", "2", 300, 200},
 		{"bad id", "3", 0, 404},
 	}
 
@@ -95,6 +95,9 @@ func TestAppServer_GetCourseHandler(t *testing.T) {
 				case "2":
 					return nil, eduboard.Course{
 						ID: "2",
+						Schedules: []eduboard.Schedule{
+							{Title: "Title"},
+						},
 						Entries: []eduboard.CourseEntry{
 							{ID: "1", CourseID: "2"},
 							{ID: "2", CourseID: "2"}},
