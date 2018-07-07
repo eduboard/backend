@@ -14,6 +14,15 @@ type Course struct {
 	Labels      []string        `json:"labels" bson:"labels"`
 	EntryIDs    []bson.ObjectId `json:"entryIDs" bson:"entryIDs"`
 	Entries     []CourseEntry   `json:"entries" bson:"entries"`
+	Schedules   []Schedule      `json:"schedules" bson:"schedules"`
+}
+
+type Schedule struct {
+	Day      time.Weekday  `json:"day" bson:"day"`
+	Start    time.Time     `json:"startsAt" bson:"startsAt"`
+	Duration time.Duration `json:"duration,omitempty" bson:"duration"`
+	Room     string        `json:"room,omitempty" bson:"room"`
+	Title    string        `json:"title,omitempty" bson:"title"`
 }
 
 type CourseInserter interface {

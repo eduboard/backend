@@ -44,13 +44,22 @@ func (a *AppServer) GetCourseHandler() httprouter.Handle {
 		Published bool      `json:"published"`
 	}
 
+	type scheduleResponse struct {
+		Day      time.Weekday  `json:"day"`
+		Start    time.Time     `json:"startsAt"`
+		Duration time.Duration `json:"duration,omitempty"`
+		Room     string        `json:"room,omitempty"`
+		Title    string        `json:"title,omitempty"`
+	}
+
 	type courseResponse struct {
-		ID          string          `json:"id"`
-		Title       string          `json:"title"`
-		Description string          `json:"description"`
-		Members     []string        `json:"members,omitempty"`
-		Labels      []string        `json:"labels,omitempty"`
-		Entries     []entryResponse `json:"entries,omitempty"`
+		ID          string             `json:"id"`
+		Title       string             `json:"title"`
+		Description string             `json:"description"`
+		Members     []string           `json:"members,omitempty"`
+		Labels      []string           `json:"labels,omitempty"`
+		Entries     []entryResponse    `json:"entries,omitempty"`
+		Schedules   []scheduleResponse `json:"schedules,omitempty"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -69,6 +78,7 @@ func (a *AppServer) GetCourseHandler() httprouter.Handle {
 			Members:     course.Members,
 			Labels:      course.Labels,
 			Entries:     make([]entryResponse, len(course.Entries)),
+			Schedules:   make([]scheduleResponse, len(course.Schedules)),
 		}
 
 		for k, v := range course.Entries {
@@ -78,6 +88,16 @@ func (a *AppServer) GetCourseHandler() httprouter.Handle {
 				Message:   v.Message,
 				Pictures:  url.StringifyURLs(v.Pictures),
 				Published: v.Published,
+			}
+		}
+
+		for k, v := range course.Schedules {
+			res.Schedules[k] = scheduleResponse{
+				v.Day,
+				v.Start,
+				v.Duration,
+				v.Room,
+				v.Title,
 			}
 		}
 
