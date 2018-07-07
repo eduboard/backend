@@ -20,6 +20,7 @@ func (a *AppServer) authenticatedRoutes() *httprouter.Router {
 	router.GET("/api/v1/courses", a.GetAllCoursesHandler())
 
 	// CourseEntries
+	router.POST("/api/v1/courses", a.CreateCourseHandler())
 	router.POST("/api/v1/courses/:courseID/entries", a.PostCourseEntryHandler())
 	router.PUT("/api/v1/courses/:courseID/entries/:entryID", a.PutCourseEntryHandler())
 	router.DELETE("/api/v1/courses/:courseID/entries/:entryID", a.DeleteCourseEntryHandler())

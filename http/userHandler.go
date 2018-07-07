@@ -157,6 +157,7 @@ func (a *AppServer) GetMeHandler() httprouter.Handle {
 		Name    string `json:"name"`
 		Surname string `json:"surname"`
 		Email   string `json:"email"`
+		Picture string `json:"profilePicture,omitempty"`
 	}
 
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
@@ -178,6 +179,7 @@ func (a *AppServer) GetMeHandler() httprouter.Handle {
 			Name:    user.Name,
 			Surname: user.Surname,
 			Email:   user.Email,
+			Picture: url.StringifyURLs(user.Picture)[0],
 		}
 
 		if err = json.NewEncoder(w).Encode(response); err != nil {
@@ -195,13 +197,22 @@ func (a *AppServer) GetMyCoursesHandler() httprouter.Handle {
 		Published bool      `json:"published"`
 	}
 
+	type scheduleResponse struct {
+		Day      time.Weekday  `json:"day"`
+		Start    time.Time     `json:"startsAt"`
+		Duration time.Duration `json:"duration,omitempty"`
+		Room     string        `json:"room,omitempty"`
+		Title    string        `json:"title,omitempty"`
+	}
+
 	type courseResponse struct {
-		ID          string          `json:"id"`
-		Title       string          `json:"title"`
-		Description string          `json:"description"`
-		Members     []string        `json:"members,omitempty"`
-		Labels      []string        `json:"labels,omitempty"`
-		Entries     []entryResponse `json:"entries,omitempty"`
+		ID          string             `json:"id"`
+		Title       string             `json:"title"`
+		Description string             `json:"description"`
+		Members     []string           `json:"members,omitempty"`
+		Labels      []string           `json:"labels,omitempty"`
+		Entries     []entryResponse    `json:"entries,omitempty"`
+		Schedules   []scheduleResponse `json:"schedules,omitempty"`
 	}
 	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
 		id := p.ByName("id")
@@ -221,6 +232,7 @@ func (a *AppServer) GetMyCoursesHandler() httprouter.Handle {
 				Members:     v.Members,
 				Labels:      v.Labels,
 				Entries:     make([]entryResponse, len(v.Entries)),
+				Schedules:   make([]scheduleResponse, len(v.Schedules)),
 			}
 
 			for eK, eV := range v.Entries {
@@ -228,8 +240,18 @@ func (a *AppServer) GetMyCoursesHandler() httprouter.Handle {
 					ID:        eV.ID.Hex(),
 					Date:      eV.Date,
 					Message:   eV.Message,
-					Pictures:  url.StringifyURLs(eV.Pictures),
+					Pictures:  url.StringifyURLs(eV.Pictures...),
 					Published: eV.Published,
+				}
+			}
+
+			for sK, sV := range v.Schedules {
+				res[k].Schedules[sK] = scheduleResponse{
+					sV.Day,
+					sV.Start,
+					sV.Duration,
+					sV.Room,
+					sV.Title,
 				}
 			}
 		}

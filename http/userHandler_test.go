@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -203,12 +204,16 @@ func TestAppServer_GetUserHandler(t *testing.T) {
 }
 
 func TestAppServer_GetMeHandler(t *testing.T) {
+	u, err := url.Parse("http://example.com")
+	if err != nil {
+		t.Fatalf("error running test: %v", err)
+	}
 	mockService := mock.UserService{}
 	mockService.GetUserFn = func(id string) (error, eduboard.User) {
 		if id != "userId" {
 			return errors.New("not found"), eduboard.User{}
 		}
-		return nil, eduboard.User{Name: "name"}
+		return nil, eduboard.User{Name: "name", Picture: *u}
 	}
 	appServer := AppServer{UserService: &mockService, Logger: log.New(os.Stdout, "", 0)}
 
@@ -241,6 +246,7 @@ func TestAppServer_GetMeHandler(t *testing.T) {
 			assert.True(t, mockService.GetUserFnInvoked, "GetUser was not invoked when it should")
 			if v.status == 200 {
 				assert.NotEmptyf(t, rr.Body, "body should not be empty")
+				assert.Contains(t, rr.Body.String(), "profilePicture", "Response Body does not contain profilePicture")
 			}
 		})
 	}
@@ -251,7 +257,17 @@ func TestAppServer_GetMyCoursesHandler(t *testing.T) {
 	mockService.GetMyCoursesFn = func(id string, cF eduboard.CourseManyFinder, cEF eduboard.CourseEntryManyFinder) (error, []eduboard.Course) {
 		switch id {
 		case "userid":
-			return nil, []eduboard.Course{{ID: "1", Title: "Course 1"}}
+			return nil, []eduboard.Course{
+				{ID: "1",
+					Title: "Course 1",
+					Schedules: []eduboard.Schedule{
+						{Title: "Title"},
+					},
+					Entries: []eduboard.CourseEntry{
+						{Message: "message"},
+					},
+				},
+			}
 		default:
 			return errors.New("error fetching courses"), []eduboard.Course{}
 		}
