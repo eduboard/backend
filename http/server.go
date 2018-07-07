@@ -17,6 +17,8 @@ type AppServer struct {
 	CourseEntryService    eduboard.CourseEntryService
 	CourseRepository      eduboard.CourseRepository
 	CourseEntryRepository eduboard.CourseEntryRepository
+	PrefService           eduboard.PrefService
+	PrefRepository        eduboard.PrefRepository
 	httpServer            *http.Server
 }
 
