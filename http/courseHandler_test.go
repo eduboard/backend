@@ -12,6 +12,7 @@ import (
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestAppServer_GetAllCoursesHandler(t *testing.T) {
@@ -233,6 +234,53 @@ func TestAppServer_RemoveMembersHandler(t *testing.T) {
 				assert.True(t, mockService.RemoveMembersFnInvoked, "RemoveMembers was not invoked")
 			}
 			assert.Equal(t, v.status, rr.Code, "unexpected status code")
+		})
+	}
+}
+
+func TestAppServer_CreateCourseHandler(t *testing.T) {
+	mockService := mock.CourseService{}
+	appServer := AppServer{
+		CourseService:         &mockService,
+		CourseRepository:      &mock.CourseRepository{},
+		CourseEntryRepository: &mock.CourseEntryRepository{},
+		Logger:                log.New(os.Stdout, "", 0),
+	}
+	var testCases = []struct {
+		name    string
+		invoked bool
+		success bool
+		body    string
+		code    int
+	}{
+		{"good case", true, true, `{"title": "course 1", "description": "course 1"}`, 200},
+		{"wrong body", false, true, `{"title": "course 1, "description": "course 1"`, 400},
+		{"error", true, false, `{"title": "course 1", "description": "course 1"}`, 500},
+	}
+
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			mockService.CreateCourseFnInvoked = false
+			mockService.CreateCourseFn = func(c *eduboard.Course) (*eduboard.Course, error) {
+				newCourse := eduboard.Course{}
+				newCourse.ID = bson.NewObjectId()
+				newCourse.Title = c.Title
+				newCourse.Description = c.Description
+				newCourse.Members = c.Members
+				newCourse.Labels = c.Labels
+				now := time.Now().UTC()
+				newCourse.CreatedAt = now
+				if !v.success {
+					return nil, errors.New("invalid id")
+				}
+				return &newCourse, nil
+			}
+
+			r := httptest.NewRequest("POST", "/", strings.NewReader(v.body))
+			rr := httptest.NewRecorder()
+			appServer.CreateCourseHandler()(rr, r, httprouter.Params{})
+			assert.Equal(t, v.invoked, mockService.CreateCourseFnInvoked, "CreateCourse was not invoked")
+			assert.Equal(t, v.code, rr.Code, "status code unexpected")
 		})
 	}
 }

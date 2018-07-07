@@ -38,12 +38,14 @@ type CourseFindUpdater interface {
 }
 
 type CourseRepository interface {
+	CourseInserter
 	CourseOneFinder
 	CourseManyFinder
 	CourseUpdater
 }
 
 type CourseService interface {
+	CreateCourse(c *Course) (*Course, error)
 	GetAllCourses() (err error, courses []Course)
 	GetCourse(id string, cef CourseEntryManyFinder) (err error, course Course)
 	GetCoursesByMember(id string, cef CourseEntryManyFinder) (err error, courses []Course)

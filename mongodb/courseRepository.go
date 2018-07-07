@@ -5,6 +5,7 @@ import (
 	"github.com/eduboard/backend"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
 type CourseRepository struct {
@@ -19,7 +20,14 @@ func newCourseRepository(database *mgo.Database) *CourseRepository {
 }
 
 func (c *CourseRepository) Insert(course *eduboard.Course) error {
-	return nil
+	if course.ID == "" {
+		course.ID = bson.NewObjectId()
+	}
+
+	now := time.Now().UTC()
+	course.CreatedAt = now
+
+	return c.c.Insert(course)
 }
 
 func (c *CourseRepository) FindOneByID(id string) (error, eduboard.Course) {

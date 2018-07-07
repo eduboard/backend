@@ -2,6 +2,7 @@ package http
 
 import (
 	"encoding/json"
+	"github.com/eduboard/backend"
 	"github.com/eduboard/backend/url"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
@@ -169,6 +170,58 @@ func (a *AppServer) RemoveMembersHandler() httprouter.Handle {
 			a.Logger.Printf("Error while unsubscribing user from course %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
+		}
+	}
+}
+
+func (a *AppServer) CreateCourseHandler() httprouter.Handle {
+	type request struct {
+		Title       string   `json:"title,omitempty"`
+		Description string   `json:"description,omitempty"`
+		Members     []string `json:"members,omitempty"`
+		Labels      []string `json:"labels"`
+	}
+	type response struct {
+		ID          string    `json:"id,omitempty"`
+		Title       string    `json:"title,omitempty"`
+		Description string    `json:"description,omitempty"`
+		Members     []string  `json:"members,omitempty"`
+		Labels      []string  `json:"labels"`
+		CreatedAt   time.Time `json:"createdAt"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		var request request
+		var course eduboard.Course
+
+		err := json.NewDecoder(r.Body).Decode(&request)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		course.Title = request.Title
+		course.Description = request.Description
+		course.Members = request.Members
+		course.Labels = request.Labels
+
+		newCourse, err := a.CourseService.CreateCourse(&course)
+		if err != nil {
+			a.Logger.Printf("error creating course: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		response := response{
+			ID:          newCourse.ID.Hex(),
+			Title:       newCourse.Title,
+			Description: newCourse.Description,
+			Members:     newCourse.Members,
+			Labels:      newCourse.Labels,
+			CreatedAt:   newCourse.CreatedAt,
+		}
+		if err = json.NewEncoder(w).Encode(response); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}
 }

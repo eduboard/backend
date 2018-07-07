@@ -22,6 +22,9 @@ type CourseService struct {
 
 	RemoveMembersFn        func(course string, members []string) (error, eduboard.Course)
 	RemoveMembersFnInvoked bool
+
+	CreateCourseFn        func(c *eduboard.Course) (*eduboard.Course, error)
+	CreateCourseFnInvoked bool
 }
 
 var _ eduboard.CourseService = (*CourseService)(nil)
@@ -34,6 +37,11 @@ func (cSM *CourseService) GetCourse(id string, cef eduboard.CourseEntryManyFinde
 func (cSM *CourseService) GetAllCourses() (err error, courses []eduboard.Course) {
 	cSM.CoursesFnInvoked = true
 	return cSM.CoursesFn()
+}
+
+func (cSM *CourseService) CreateCourse(c *eduboard.Course) (*eduboard.Course, error) {
+	cSM.CreateCourseFnInvoked = true
+	return cSM.CreateCourseFn(c)
 }
 
 func (cSM *CourseService) GetCoursesByMember(id string, cef eduboard.CourseEntryManyFinder) (error, []eduboard.Course) {

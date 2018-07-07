@@ -2,15 +2,16 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"log"
+	"os"
+
 	"github.com/eduboard/backend/config"
 	"github.com/eduboard/backend/http"
 	"github.com/eduboard/backend/mongodb"
 	"github.com/eduboard/backend/service/courseEntryService"
 	"github.com/eduboard/backend/service/courseService"
 	"github.com/eduboard/backend/service/userService"
-	"io"
-	"log"
-	"os"
 )
 
 func main() {
