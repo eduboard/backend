@@ -38,16 +38,16 @@ func TestAppServer_PostCourseEntryHandler(t *testing.T) {
 		return nil, entry
 	}
 
-	service.StoreCourseEntryFilesFn = func(files [][]byte, id string, date time.Time) (error, []string) {
+	service.StoreCourseEntryFilesFn = func(files [][]byte, id string, date time.Time) ([]string, error) {
 		switch len(files) {
 		case 0:
-			return nil, []string{}
+			return []string{}, nil
 		case 1:
-			return nil, []string{"/test/test/1.jpg"}
+			return []string{"/test/test/1.jpg"}, nil
 		case 2:
-			return nil, []string{":test.com/cant/parse/this//"}
+			return []string{":test.com/cant/parse/this//"}, nil
 		default:
-			return errors.New("invalid something error while storing files"), []string{}
+			return []string{}, errors.New("invalid something error while storing files")
 		}
 	}
 

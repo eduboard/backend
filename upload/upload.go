@@ -10,8 +10,7 @@ import (
 
 type Uploader struct{}
 
-func (u *Uploader) UploadFile(file []byte, course string, filename string) (error, string) {
-	// check content type
+func (u *Uploader) UploadFile(file []byte, course string, filename string) (string, error) {
 	dir := string("./files/" + course + "/")
 	path := string(dir + filename)
 	serverFile := string("/files/" + course + "/" + filename)
@@ -19,7 +18,7 @@ func (u *Uploader) UploadFile(file []byte, course string, filename string) (erro
 	contentType := http.DetectContentType(file)
 
 	if strings.Split(contentType, "/")[0] != "image" {
-		return errors.New("filetype not supported"), ""
+		return "", errors.New("filetype not supported")
 	}
 
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
@@ -29,8 +28,8 @@ func (u *Uploader) UploadFile(file []byte, course string, filename string) (erro
 	err := ioutil.WriteFile(path, file, 0644)
 	if err != nil {
 		panic(err)
-		return err, ""
+		return "", err
 	}
 
-	return nil, serverFile
+	return serverFile, nil
 }

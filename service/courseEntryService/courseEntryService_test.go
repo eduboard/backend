@@ -84,11 +84,11 @@ func TestCourseEntryService_StoreCourseEntryFiles(t *testing.T) {
 		{"error", true, [][]byte{[]byte("moep")}, "failure"},
 	}
 	uploader := mock.Uploader{}
-	uploader.UploadFileFn = func(file []byte, course string, filename string) (error, string) {
+	uploader.UploadFileFn = func(file []byte, course string, filename string) (string, error) {
 		if course == "success" {
-			return nil, filename
+			return filename, nil
 		}
-		return errors.New("error uploading files"), ""
+		return "", errors.New("error uploading files")
 	}
 	service := CourseEntryService{u: &uploader}
 
@@ -96,7 +96,7 @@ func TestCourseEntryService_StoreCourseEntryFiles(t *testing.T) {
 		t.Run(v.name, func(t *testing.T) {
 			uploader.UploadFileFnInvoked = false
 
-			err, _ := service.StoreCourseEntryFiles(v.files, v.course, time.Now())
+			_ , err:= service.StoreCourseEntryFiles(v.files, v.course, time.Now())
 			if v.error {
 				assert.NotNil(t, err, "error nil")
 				return

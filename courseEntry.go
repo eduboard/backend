@@ -46,7 +46,7 @@ type CourseEntryDeleter interface {
 
 type CourseEntryService interface {
 	StoreCourseEntry(entry *CourseEntry, cfu CourseFindUpdater) (err error, courseEntry *CourseEntry)
-	StoreCourseEntryFiles(files [][]byte, id string, date time.Time) (err error, paths []string)
+	StoreCourseEntryFiles(files [][]byte, id string, date time.Time) (paths []string, err error)
 	UpdateCourseEntry(*CourseEntry) (*CourseEntry, error)
 	DeleteCourseEntry(entryID string, courseID string, updater CourseUpdater) error
 }

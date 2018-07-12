@@ -17,7 +17,7 @@ func New(repository eduboard.CourseEntryRepository) CourseEntryService {
 }
 
 type Uploader interface {
-	UploadFile(file []byte, course string, filename string) (error, string)
+	UploadFile(file []byte, course string, filename string) (string, error)
 }
 
 type CourseEntryService struct {
@@ -48,16 +48,16 @@ func (cES CourseEntryService) StoreCourseEntry(entry *eduboard.CourseEntry, cfu 
 	return nil, entry
 }
 
-func (cES CourseEntryService) StoreCourseEntryFiles(files [][]byte, id string, date time.Time) (error, []string) {
+func (cES CourseEntryService) StoreCourseEntryFiles(files [][]byte, id string, date time.Time) ([]string, error) {
 	paths := []string{}
 	for key, file := range files {
-		err, url := cES.u.UploadFile(file, id, date.String()+"_"+strconv.Itoa(key))
+		url, err := cES.u.UploadFile(file, id, date.String()+"_"+strconv.Itoa(key))
 		if err != nil {
-			return err, []string{}
+			return []string{}, err
 		}
 		paths = append(paths, url)
 	}
-	return nil, paths
+	return paths, nil
 }
 
 func (cES CourseEntryService) UpdateCourseEntry(*eduboard.CourseEntry) (*eduboard.CourseEntry, error) {

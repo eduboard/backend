@@ -61,7 +61,7 @@ type CourseEntryService struct {
 	StoreCourseEntryFn        func(entry *eduboard.CourseEntry, cfu eduboard.CourseFindUpdater) (err error, courseEntry *eduboard.CourseEntry)
 	StoreCourseEntryFnInvoked bool
 
-	StoreCourseEntryFilesFn        func(files [][]byte, id string, date time.Time) (error, []string)
+	StoreCourseEntryFilesFn        func(files [][]byte, id string, date time.Time) ([]string, error)
 	StoreCourseEntryFilesFnInvoked bool
 
 	UpdateCourseEntryFn        func(*eduboard.CourseEntry) (*eduboard.CourseEntry, error)
@@ -76,7 +76,7 @@ func (cSM *CourseEntryService) StoreCourseEntry(entry *eduboard.CourseEntry, cfu
 	return cSM.StoreCourseEntryFn(entry, cfu)
 }
 
-func (cSM *CourseEntryService) StoreCourseEntryFiles(files [][]byte, id string, date time.Time) (error, []string) {
+func (cSM *CourseEntryService) StoreCourseEntryFiles(files [][]byte, id string, date time.Time) ([]string, error) {
 	cSM.StoreCourseEntryFilesFnInvoked = true
 	return cSM.StoreCourseEntryFilesFn(files, id, date)
 }

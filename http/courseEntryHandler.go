@@ -43,7 +43,7 @@ func (a *AppServer) PostCourseEntryHandler() httprouter.Handle {
 			return
 		}
 
-		err, paths := a.CourseEntryService.StoreCourseEntryFiles(request.Pictures, id, request.Date)
+		paths, err := a.CourseEntryService.StoreCourseEntryFiles(request.Pictures, id, request.Date)
 		if err != nil {
 			a.Logger.Printf("error storing files: %v", err)
 			w.WriteHeader(http.StatusInternalServerError)
