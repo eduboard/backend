@@ -97,6 +97,9 @@ type UserService struct {
 	GetUserFn        func(id string) (error, eduboard.User)
 	GetUserFnInvoked bool
 
+	GetAllUsersFn        func() ([]eduboard.User, error)
+	GetAllUsersFnInvoked bool
+
 	GetMyCoursesFn        func(id string, cBMF eduboard.CourseManyFinder, cEMF eduboard.CourseEntryManyFinder) (error, []eduboard.Course)
 	GetMyCoursesFnInvoked bool
 
@@ -113,6 +116,11 @@ func (uSM *UserService) CreateUser(u *eduboard.User, password string) (error, ed
 func (uSM *UserService) GetUser(id string) (error, eduboard.User) {
 	uSM.GetUserFnInvoked = true
 	return uSM.GetUserFn(id)
+}
+
+func (uSM *UserService) GetAllUsers() ([]eduboard.User, error) {
+	uSM.GetAllUsersFnInvoked = true
+	return uSM.GetAllUsersFn()
 }
 
 func (uSM *UserService) GetMyCourses(id string, cBMF eduboard.CourseManyFinder, cEMF eduboard.CourseEntryManyFinder) (error, []eduboard.Course) {

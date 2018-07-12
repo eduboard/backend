@@ -38,6 +38,16 @@ func (u *UserRepository) Find(id string) (error, eduboard.User) {
 	return nil, result
 }
 
+func (u *UserRepository) FindMany(query bson.M) ([]eduboard.User, error) {
+	result := []eduboard.User{}
+
+	if err := u.c.Find(query).All(&result); err != nil {
+		return []eduboard.User{}, err
+	}
+
+	return result, nil
+}
+
 func (u *UserRepository) FindBySessionID(sessionID string) (error, eduboard.User) {
 	if sessionID == "" {
 		return errors.New("not found"), eduboard.User{}

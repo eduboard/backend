@@ -69,6 +69,9 @@ type UserRepository struct {
 	FindFn        func(id string) (error, eduboard.User)
 	FindFnInvoked bool
 
+	FindManyFn        func(query bson.M) ([]eduboard.User, error)
+	FindManyFnInvoked bool
+
 	FindByEmailFn        func(email string) (error, eduboard.User)
 	FindByEmailFnInvoked bool
 
@@ -98,6 +101,11 @@ func (uRM *UserRepository) Store(user *eduboard.User) error {
 func (uRM *UserRepository) Find(id string) (error, eduboard.User) {
 	uRM.FindFnInvoked = true
 	return uRM.FindFn(id)
+}
+
+func (uRM *UserRepository) FindMany(query bson.M) ([]eduboard.User, error) {
+	uRM.FindManyFnInvoked = true
+	return uRM.FindManyFn(query)
 }
 
 func (uRM *UserRepository) FindByEmail(email string) (error, eduboard.User) {

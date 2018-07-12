@@ -18,6 +18,10 @@ var r = mock.UserRepository{
 		}
 		return errors.New("not found"), eduboard.User{}
 	},
+	FindManyFnInvoked: false,
+	FindManyFn: func(query bson.M) ([]eduboard.User, error) {
+		return []eduboard.User{{ID: "0"}}, nil
+	},
 	FindByEmailFnInvoked: false,
 	FindByEmailFn: func(email string) (error, eduboard.User) {
 		if email == "existing@mail.com" {
@@ -140,6 +144,29 @@ func TestUserService_GetUser(t *testing.T) {
 			assert.Nil(t, err, "failed to get existing user")
 			assert.NotEqual(t, eduboard.User{}, user, "returned non-empty user")
 			assert.True(t, r.FindFnInvoked, "Find was not invoked")
+		})
+	}
+}
+
+func TestUserService_GetAllUsers(t *testing.T) {
+	t.Parallel()
+
+	var testCases = []struct {
+		name  string
+		error bool
+	}{
+		{"success", false},
+	}
+
+	for _, v := range testCases {
+		t.Run(v.name, func(t *testing.T) {
+			defer func() { r.FindManyFnInvoked = false }()
+
+			users, err := us.GetAllUsers()
+
+			assert.Nil(t, err, "failed to get users")
+			assert.NotEqual(t, []eduboard.User{}, users, "returned non empty users")
+			assert.True(t, r.FindManyFnInvoked, "FindMany was not invoked")
 		})
 	}
 }

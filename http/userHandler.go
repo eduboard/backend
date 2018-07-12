@@ -9,6 +9,40 @@ import (
 	"time"
 )
 
+func (a *AppServer) GetAllUsersHandler() httprouter.Handle {
+	type response struct {
+		ID      string `json:"id"`
+		Name    string `json:"name"`
+		Surname string `json:"surname"`
+		Email   string `json:"email"`
+		Picture string `json:"profilePicture,omitempty"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request, p httprouter.Params) {
+		users, err := a.UserService.GetAllUsers()
+		if err != nil {
+			a.Logger.Printf("error getting users: %v", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		var res = make([]response, len(users))
+		for k, v := range users {
+			res[k] = response{
+				ID:      v.ID.Hex(),
+				Name:    v.Name,
+				Surname: v.Surname,
+				Email:   v.Email,
+				Picture: url.StringifyURLs(v.Picture)[0],
+			}
+		}
+
+		if err = json.NewEncoder(w).Encode(&res); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}
+}
+
 func (a *AppServer) RegisterUserHandler() httprouter.Handle {
 	type request struct {
 		Name     string `json:"name"`

@@ -51,6 +51,20 @@
         "email": "mathias.hertzel@gmail.com"
     }
     ```
+- `/api/v1/users` GET all users
+
+    ```json
+    [
+        {
+            "id": "12345",
+            "name": "Mathias",
+            "surname": "Herzel",
+            "email": "mathias.hertzel@gmail.com",
+            "profilePicture": "http://example.com"
+        }
+    ]
+
+    ```
 - `/api/v1/users/:id` GET users.
 
     ```json

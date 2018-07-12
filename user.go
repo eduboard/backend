@@ -26,6 +26,7 @@ type UserFinder interface {
 type UserRepository interface {
 	Store(user *User) error
 	Find(id string) (error, User)
+	FindMany(query bson.M) ([]User, error)
 	FindByEmail(email string) (error, User)
 	FindBySessionID(sessionID string) (error, User)
 	IsIDValid(id string) bool
@@ -36,6 +37,7 @@ type UserRepository interface {
 type UserService interface {
 	CreateUser(u *User, password string) (error, User)
 	GetUser(id string) (error, User)
+	GetAllUsers() ([]User, error)
 	GetMyCourses(id string, cS CourseManyFinder, cEMF CourseEntryManyFinder) (error, []Course)
 	UserAuthenticationProvider
 }

@@ -26,6 +26,10 @@ func New(userRepository eduboard.UserRepository) *UserService {
 	}
 }
 
+func (uS *UserService) GetAllUsers() ([]eduboard.User, error) {
+	return uS.r.FindMany(bson.M{})
+}
+
 func (uS *UserService) CreateUser(user *eduboard.User, password string) (error, eduboard.User) {
 	err, _ := uS.r.FindByEmail(user.Email)
 	if err == nil {

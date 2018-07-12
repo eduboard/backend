@@ -16,6 +16,56 @@ import (
 	"testing"
 )
 
+func TestAppServer_GetAllUsersHandler(t *testing.T) {
+	u, err := url.Parse("http://example.com")
+	if err != nil {
+		t.Fatalf("error running test: %v", err)
+	}
+	usersList := []eduboard.User{{
+		ID:      "1",
+		Name:    "test",
+		Surname: "testi",
+		Email:   "lalala",
+		Picture: *u,
+	}}
+
+	mockService := mock.UserService{}
+	appServer := AppServer{
+		UserService: &mockService,
+		Logger:      log.New(os.Stdout, "", 0),
+	}
+
+	var testCases = []struct {
+		name   string
+		error  bool
+		status int
+	}{
+		{"success", false, 200},
+		{"error", true, 500},
+	}
+
+	for _, v := range testCases {
+
+		mockService.GetAllUsersFn = func() (users []eduboard.User, err error) {
+			if v.error {
+				return []eduboard.User{}, errors.New("error")
+			}
+			return usersList, nil
+		}
+
+		t.Run(v.name, func(t *testing.T) {
+			mockService.GetAllUsersFnInvoked = false
+			r := httptest.NewRequest("GET", "/", nil)
+			rr := httptest.NewRecorder()
+
+			appServer.GetAllUsersHandler()(rr, r, httprouter.Params{})
+			assert.True(t, mockService.GetAllUsersFnInvoked, "GetAllUsers was not invoked")
+			assert.Equal(t, v.status, rr.Code, "bad response code")
+			assert.True(t, v.error || len(rr.Body.String()) > 2, "bad body length")
+		})
+	}
+}
+
 func TestAppServer_RegisterUserHandler(t *testing.T) {
 	mockService := mock.UserService{}
 	mockService.CreateUserFn = func(u *eduboard.User, password string) (error, eduboard.User) {
